@@ -77,6 +77,12 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
   }
   
   const points = SHAPE_POINTS[size];
+
+  // Create the class names for the shape with animal-specific styling
+  const shapeClassName = cn(
+    `shape-${shape}`,
+    animalName && `animal-${animalName.toLowerCase()}`
+  );
   
   return (
     <div 
@@ -88,10 +94,7 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
       onClick={onClick}
     >
       <div 
-        className={cn(
-          `shape-${shape}`, 
-          animalName && `animal-${animalName.toLowerCase()}`
-        )} 
+        className={shapeClassName}
         style={shapeStyles}
       />
       {!preview && !gridPreview && (

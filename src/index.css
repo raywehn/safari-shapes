@@ -94,7 +94,7 @@
     transform-origin: top left;
   }
 
-  /* Animal-specific colors */
+  /* Animal-specific colors - using stronger selectors with !important to override defaults */
   .animal-mouse {
     @apply bg-gray-400 !important;
   }
@@ -133,6 +133,32 @@
   
   .animal-elephant.shape-heart:before,
   .animal-elephant.shape-heart:after {
+    @apply bg-purple-500 !important;
+  }
+
+  /* Ensure colors are applied on the grid by making them more specific */
+  .board-cell .animal-mouse {
+    @apply bg-gray-400 !important;
+  }
+  
+  .board-cell .animal-rabbit.shape-triangle {
+    border-bottom-color: theme('colors.amber.400') !important;
+  }
+  
+  .board-cell .animal-fox {
+    @apply bg-orange-500 !important;
+  }
+  
+  .board-cell .animal-leopard {
+    @apply bg-yellow-600 !important;
+  }
+  
+  .board-cell .animal-elephant {
+    @apply bg-purple-500 !important;
+  }
+  
+  .board-cell .animal-elephant.shape-heart:before,
+  .board-cell .animal-elephant.shape-heart:after {
     @apply bg-purple-500 !important;
   }
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import ShapeItem, { ShapeType, SizeType, SHAPE_POINTS, SIZE_GRID_CELLS } from './ShapeItem';
 import { cn } from '@/lib/utils';
@@ -37,12 +36,10 @@ const GameBoard: React.FC<GameBoardProps> = ({
     
     const gridSize = SIZE_GRID_CELLS[shape.size];
     
-    // Check if shape fits within board boundaries
     if (row + gridSize.height > size || col + gridSize.width > size) {
       return false;
     }
     
-    // Check if all required cells are empty
     for (let r = 0; r < gridSize.height; r++) {
       for (let c = 0; c < gridSize.width; c++) {
         if (cells[row + r][col + c] !== null) {
@@ -70,7 +67,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
     }
   };
 
-  // Determine if a cell should show the hover effect
   const shouldShowHover = (row: number, col: number) => {
     if (!hoverCell || !selectedShape) return false;
     
@@ -83,7 +79,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
            col < hoverCol + gridSize.width;
   };
 
-  // Determine if a cell is part of a larger shape
   const isPartOfShape = (row: number, col: number) => {
     const cell = cells[row][col];
     if (!cell || !cell.origin) return false;
