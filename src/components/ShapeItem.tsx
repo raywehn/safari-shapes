@@ -145,7 +145,7 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
       {!isHeart && (
         <div 
           className={cn(
-            shapeBaseClass,
+            'shape-base',
             shape === 'circle' && 'rounded-full',
             shape === 'square' && 'rounded-md'
           )}
