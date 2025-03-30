@@ -34,11 +34,11 @@ export const SIZE_GRID_CELLS: Record<SizeType, { width: number; height: number }
 
 // Animal color mapping
 export const ANIMAL_COLORS: Record<string, string> = {
-  'mouse': 'bg-gray-400',
-  'rabbit': 'bg-amber-400',
-  'fox': 'bg-orange-500',
-  'leopard': 'bg-yellow-600',
-  'elephant': 'bg-purple-500'
+  'mouse': '#9ca3af', // gray-400
+  'rabbit': '#fbbf24', // amber-400
+  'fox': '#f97316', // orange-500
+  'leopard': '#ca8a04', // yellow-600
+  'elephant': '#a855f7' // purple-500
 };
 
 export type AnimalType = {
@@ -69,65 +69,50 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
   const dimension = SIZE_DIMENSIONS[size];
   const animalNameLower = animalName?.toLowerCase() || '';
   
-  // Generate shape styles
+  // Get color based on animal
+  let backgroundColor = '#10b981'; // Default color
+  if (animalNameLower) {
+    backgroundColor = ANIMAL_COLORS[animalNameLower] || backgroundColor;
+  }
+  
+  // Set up styles based on display context and shape
   let shapeStyles: React.CSSProperties = {
     width: gridPreview ? '100%' : dimension,
     height: gridPreview ? '100%' : dimension,
+    backgroundColor
   };
   
-  let colorStyle: React.CSSProperties = {};
-  
-  // Get color based on animal
-  if (animalNameLower) {
-    switch (animalNameLower) {
-      case 'mouse':
-        colorStyle.backgroundColor = '#9ca3af'; // gray-400
-        break;
-      case 'rabbit':
-        colorStyle.backgroundColor = '#fbbf24'; // amber-400
-        break;
-      case 'fox':
-        colorStyle.backgroundColor = '#f97316'; // orange-500
-        break;
-      case 'leopard':
-        colorStyle.backgroundColor = '#ca8a04'; // yellow-600
-        break;
-      case 'elephant':
-        colorStyle.backgroundColor = '#a855f7'; // purple-500
-        break;
-      default:
-        colorStyle.backgroundColor = '#10b981'; // Default color
-    }
-  }
-  
-  // Special handling for triangle
+  // Special styling for triangle shape
   if (shape === 'triangle') {
     if (!gridPreview) {
+      // Stand-alone triangle (in palette)
       shapeStyles = {
-        ...shapeStyles,
+        width: 0,
+        height: 0,
         borderLeftWidth: dimension / 2,
         borderRightWidth: dimension / 2,
         borderBottomWidth: dimension,
-        width: 0,
-        height: 0,
-        borderBottomColor: colorStyle.backgroundColor || '#10b981',
+        borderStyle: 'solid',
         borderLeftColor: 'transparent',
-        borderRightColor: 'transparent'
+        borderRightColor: 'transparent',
+        borderBottomColor: backgroundColor
       };
-      colorStyle = {}; // Reset color style as we set it directly in the shape
     } else {
-      // When in grid, render a colored div instead with triangle shape
+      // Grid triangle
       shapeStyles = {
-        ...shapeStyles,
+        width: '100%',
+        height: '100%',
         clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
-        ...colorStyle
+        backgroundColor
       };
     }
   }
   
-  // For heart shape, we'll use different styling
-  const isHeart = shape === 'heart';
-  const heartColor = colorStyle.backgroundColor;
+  // For heart shape
+  if (shape === 'heart') {
+    // Reset background color as we'll apply it to the heart parts
+    shapeStyles.backgroundColor = 'transparent';
+  }
   
   const points = SHAPE_POINTS[size];
   
@@ -141,55 +126,52 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
       onClick={onClick}
       data-animal={animalNameLower}
     >
-      {/* For non-heart shapes, use a single div with the right styling */}
-      {!isHeart && (
+      {/* For square and circle shapes */}
+      {shape !== 'heart' && shape !== 'triangle' && (
         <div 
           className={cn(
             'shape-base',
             shape === 'circle' && 'rounded-full',
             shape === 'square' && 'rounded-md'
           )}
-          style={{
-            ...shapeStyles,
-            ...(shape !== 'triangle' ? colorStyle : {})
-          }}
+          style={shapeStyles}
         />
       )}
       
+      {/* For triangle shape with special handling */}
+      {shape === 'triangle' && (
+        <div style={shapeStyles} />
+      )}
+      
       {/* Special handling for heart shape */}
-      {isHeart && (
-        <div className="heart-shape-container" style={shapeStyles}>
-          <div 
-            className="heart-shape"
-            style={{
-              position: 'relative',
-              width: '100%',
-              height: '100%'
-            }}
-          >
-            <div style={{
-              position: 'absolute',
-              width: '50%',
-              height: '80%',
-              left: 0,
-              top: 0,
-              borderRadius: '50%',
-              backgroundColor: heartColor,
-              transform: 'rotate(-45deg)',
-              transformOrigin: 'top right'
-            }} />
-            <div style={{
-              position: 'absolute',
-              width: '50%',
-              height: '80%',
-              right: 0,
-              top: 0,
-              borderRadius: '50%',
-              backgroundColor: heartColor,
-              transform: 'rotate(45deg)',
-              transformOrigin: 'top left'
-            }} />
-          </div>
+      {shape === 'heart' && (
+        <div className="heart-shape" style={{
+          position: 'relative',
+          width: gridPreview ? '100%' : dimension,
+          height: gridPreview ? '100%' : dimension
+        }}>
+          <div style={{
+            position: 'absolute',
+            width: '50%',
+            height: '80%',
+            left: 0,
+            top: 0,
+            borderRadius: '50%',
+            backgroundColor,
+            transform: 'rotate(-45deg)',
+            transformOrigin: 'top right'
+          }} />
+          <div style={{
+            position: 'absolute',
+            width: '50%',
+            height: '80%',
+            right: 0,
+            top: 0,
+            borderRadius: '50%',
+            backgroundColor,
+            transform: 'rotate(45deg)',
+            transformOrigin: 'top left'
+          }} />
         </div>
       )}
       

@@ -80,21 +80,25 @@ const GameBoard: React.FC<GameBoardProps> = ({
            col < hoverCol + gridSize.width;
   };
 
-  const isPartOfShape = (row: number, col: number) => {
+  const getShapeAtCell = (row: number, col: number) => {
     const cell = cells[row][col];
-    if (!cell || !cell.origin) return false;
-    
-    return cell.origin.row !== row || cell.origin.col !== col;
+    if (!cell) return null;
+    return cell;
   };
 
-  const getShapeOrigin = (row: number, col: number) => {
+  const getOriginCell = (row: number, col: number) => {
     const cell = cells[row][col];
-    if (!cell || !cell.origin) return null;
+    if (!cell || !cell.origin) return { row, col };
+    return cell.origin;
+  };
+
+  // Check if this cell is the origin cell of a shape
+  const isOriginCell = (row: number, col: number) => {
+    const cell = cells[row][col];
+    if (!cell) return false;
     
-    return {
-      row: cell.origin.row,
-      col: cell.origin.col
-    };
+    if (!cell.origin) return true; // If no origin specified, it is the origin
+    return cell.origin.row === row && cell.origin.col === col;
   };
 
   return (
@@ -107,14 +111,17 @@ const GameBoard: React.FC<GameBoardProps> = ({
     >
       {cells.map((row, rowIndex) =>
         row.map((cell, colIndex) => {
+          // Determine if this cell is where a shape would be validly placed
           const isValidPlacement = selectedShape && 
-                                  hoverCell?.row === rowIndex && 
-                                  hoverCell?.col === colIndex && 
-                                  canPlaceShape(rowIndex, colIndex, selectedShape);
+                                   hoverCell?.row === rowIndex && 
+                                   hoverCell?.col === colIndex && 
+                                   canPlaceShape(rowIndex, colIndex, selectedShape);
           
+          // Is this cell being hovered over?
           const isHovered = shouldShowHover(rowIndex, colIndex);
-          const origin = getShapeOrigin(rowIndex, colIndex);
-          const isOriginCell = cell && (!origin || (origin.row === rowIndex && origin.col === colIndex));
+          
+          // Is this the origin cell of a shape?
+          const isOrigin = isOriginCell(rowIndex, colIndex);
           
           return (
             <div
@@ -130,21 +137,17 @@ const GameBoard: React.FC<GameBoardProps> = ({
               onMouseLeave={handleMouseLeave}
               onClick={() => handleCellClick(rowIndex, colIndex)}
             >
-              {cell && origin && (
-                <React.Fragment>
-                  {/* If this is the origin cell, render the full shape */}
-                  {isOriginCell && (
-                    <ShapeItem 
-                      shape={cell.shape} 
-                      size={cell.size} 
-                      preview={false}
-                      gridPreview={true}
-                      animalName={cell.name}
-                    />
-                  )}
-                </React.Fragment>
+              {/* If this is the origin cell of a shape, render it */}
+              {cell && isOrigin && (
+                <ShapeItem 
+                  shape={cell.shape} 
+                  size={cell.size} 
+                  gridPreview={true}
+                  animalName={cell.name}
+                />
               )}
               
+              {/* Preview shape on hover if valid placement */}
               {isHovered && isValidPlacement && selectedShape && rowIndex === hoverCell?.row && colIndex === hoverCell?.col && (
                 <ShapeItem 
                   shape={selectedShape.shape} 

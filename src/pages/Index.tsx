@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import GameBoard, { CellContent } from '@/components/GameBoard';
@@ -45,11 +46,11 @@ const createSampleSolution = (): CellContent[][] => {
 const placeShapeOnGrid = (grid: CellContent[][], shape: CellContent, row: number, col: number) => {
   if (!shape) return;
   
-  const gridCells = SIZE_GRID_CELLS[shape.size];
+  const gridSize = SIZE_GRID_CELLS[shape.size];
   
   // Fill all cells that the shape occupies
-  for (let r = 0; r < gridCells.height; r++) {
-    for (let c = 0; c < gridCells.width; c++) {
+  for (let r = 0; r < gridSize.height; r++) {
+    for (let c = 0; c < gridSize.width; c++) {
       // Copy the shape data to each cell
       grid[row + r][col + c] = {
         ...shape,
@@ -101,10 +102,10 @@ const Index: React.FC = () => {
     if (!selectedAnimal) return;
     
     // Check if we can place the shape here
-    const gridCells = SIZE_GRID_CELLS[selectedAnimal.size];
+    const gridSize = SIZE_GRID_CELLS[selectedAnimal.size];
     
     // Check boundaries
-    if (row + gridCells.height > BOARD_SIZE || col + gridCells.width > BOARD_SIZE) {
+    if (row + gridSize.height > BOARD_SIZE || col + gridSize.width > BOARD_SIZE) {
       toast({
         title: "Can't place here",
         description: "The animal enclosure doesn't fit within the boundaries.",
@@ -114,8 +115,8 @@ const Index: React.FC = () => {
     }
     
     // Check if any cells are already occupied
-    for (let r = 0; r < gridCells.height; r++) {
-      for (let c = 0; c < gridCells.width; c++) {
+    for (let r = 0; r < gridSize.height; r++) {
+      for (let c = 0; c < gridSize.width; c++) {
         if (playerBoard[row + r][col + c] !== null) {
           toast({
             title: "Can't place here",
