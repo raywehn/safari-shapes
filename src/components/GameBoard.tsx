@@ -138,25 +138,44 @@ const GameBoard: React.FC<GameBoardProps> = ({
               onClick={() => handleCellClick(rowIndex, colIndex)}
             >
               {/* If this is the origin cell of a shape, render it */}
+              {/* If this is the origin cell of a shape, render it */}
               {cell && isOrigin && (
-                <ShapeItem 
-                  shape={cell.shape} 
-                  size={cell.size} 
-                  gridPreview={true}
-                  animalName={cell.name}
-                />
+                <div className="w-full h-full flex items-center justify-center relative"
+                     style={{
+                       width: `${SIZE_GRID_CELLS[cell.size].width * 100}%`,
+                       height: `${SIZE_GRID_CELLS[cell.size].height * 100}%`,
+                       position: 'absolute',
+                       left: 0,
+                       top: 0
+                     }}>
+                  <ShapeItem 
+                    shape={cell.shape} 
+                    size={cell.size} 
+                    gridPreview={true}
+                    animalName={cell.name}
+                  />
+                </div>
               )}
               
               {/* Preview shape on hover if valid placement */}
               {isHovered && isValidPlacement && selectedShape && rowIndex === hoverCell?.row && colIndex === hoverCell?.col && (
-                <ShapeItem 
-                  shape={selectedShape.shape} 
-                  size={selectedShape.size} 
-                  preview={true} 
-                  gridPreview={true}
-                  className="opacity-50" 
-                  animalName={selectedShape.name}
-                />
+                <div className="w-full h-full flex items-center justify-center relative"
+                     style={{
+                       width: `${SIZE_GRID_CELLS[selectedShape.size].width * 100}%`,
+                       height: `${SIZE_GRID_CELLS[selectedShape.size].height * 100}%`,
+                       position: 'absolute',
+                       left: 0,
+                       top: 0
+                     }}>
+                  <ShapeItem 
+                    shape={selectedShape.shape} 
+                    size={selectedShape.size} 
+                    preview={true} 
+                    gridPreview={true}
+                    className="opacity-50" 
+                    animalName={selectedShape.name}
+                  />
+                </div>
               )}
             </div>
           );

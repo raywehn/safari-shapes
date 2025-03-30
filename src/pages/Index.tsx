@@ -17,34 +17,32 @@ const ANIMALS: AnimalType[] = [
   { name: 'Elephant', shape: 'heart', size: 'xl' },
 ];
 
-// Sample layout for guaranteed 50 points
-const createSampleSolution = (): CellContent[][] => {
-  // Create an empty 5x5 grid
-  const grid: CellContent[][] = Array(5).fill(null).map(() => Array(5).fill(null));
+// Helper function to check if a shape can be placed at a position
+const canPlaceShapeOnGrid = (grid: CellContent[][], shape: CellContent, row: number, col: number): boolean => {
+  if (!shape) return false;
   
-  // Place a Mouse (1 point, 1x1)
-  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'square', size: 'xs', name: 'Mouse' }, 0, 0);
+  const gridSize = SIZE_GRID_CELLS[shape.size];
   
-  // Place a Rabbit (3 points, 1x1)
-  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'triangle', size: 'sm', name: 'Rabbit' }, 0, 1);
+  // Check boundaries
+  if (row + gridSize.height > grid.length || col + gridSize.width > grid[0].length) {
+    return false;
+  }
   
-  // Place 2 Foxes (7 points each = 14 points, 2x2 each)
-  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' }, 1, 0);
-  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' }, 3, 2);
+  // Check if any cells are already occupied
+  for (let r = 0; r < gridSize.height; r++) {
+    for (let c = 0; c < gridSize.width; c++) {
+      if (grid[row + r][col + c] !== null) {
+        return false;
+      }
+    }
+  }
   
-  // Place a Leopard (12 points, 2x2)
-  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'square', size: 'lg', name: 'Leopard' }, 1, 3);
-  
-  // Place an Elephant (20 points, 3x3)
-  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'heart', size: 'xl', name: 'Elephant' }, 2, 0);
-  
-  // Total: 1 + 3 + 14 + 12 + 20 = 50 points
-  return grid;
+  return true;
 };
 
 // Helper function to place a shape on the grid
-const placeShapeOnGrid = (grid: CellContent[][], shape: CellContent, row: number, col: number) => {
-  if (!shape) return;
+const placeShapeOnGrid = (grid: CellContent[][], shape: CellContent, row: number, col: number): boolean => {
+  if (!shape || !canPlaceShapeOnGrid(grid, shape, row, col)) return false;
   
   const gridSize = SIZE_GRID_CELLS[shape.size];
   
@@ -58,7 +56,36 @@ const placeShapeOnGrid = (grid: CellContent[][], shape: CellContent, row: number
       };
     }
   }
+  
+  return true;
 };
+
+// Sample layout for guaranteed 50 points
+const createSampleSolution = (): CellContent[][] => {
+  // Create an empty 5x5 grid
+  const grid: CellContent[][] = Array(5).fill(null).map(() => Array(5).fill(null));
+  
+  // Place an Elephant (20 points, 3x3) in the bottom left
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'heart', size: 'xl', name: 'Elephant' }, 2, 0);
+  
+  // Place a Leopard (12 points, 2x2) in the top right
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'square', size: 'lg', name: 'Leopard' }, 0, 3);
+  
+  // Place a Fox (7 points, 2x2) in the middle right
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' }, 3, 3);
+  
+  // Place a Fox (7 points, 2x2) in the top left
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' }, 0, 0);
+  
+  // Place a Rabbit (3 points, 1x1) in the remaining space
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'triangle', size: 'sm', name: 'Rabbit' }, 0, 2);
+  
+  // Place a Mouse (1 point, 1x1) in the remaining space
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'square', size: 'xs', name: 'Mouse' }, 2, 3);
+  
+  // Total: 20 + 12 + 7 + 7 + 3 + 1 = 50 points
+  return grid;
+}
 
 const Index: React.FC = () => {
   const BOARD_SIZE = 5;
@@ -186,7 +213,7 @@ const Index: React.FC = () => {
     <div className="min-h-screen bg-lime-50 py-10">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold text-center text-amber-900 mb-8">
-          Safari Shapes Exploration
+          Safari Shapes
         </h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

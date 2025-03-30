@@ -34,11 +34,11 @@ export const SIZE_GRID_CELLS: Record<SizeType, { width: number; height: number }
 
 // Animal color mapping
 export const ANIMAL_COLORS: Record<string, string> = {
-  'mouse': '#9ca3af', // gray-400
-  'rabbit': '#fbbf24', // amber-400
-  'fox': '#f97316', // orange-500
-  'leopard': '#ca8a04', // yellow-600
-  'elephant': '#a855f7' // purple-500
+  'mouse': '#9ca3af',    // gray-400
+  'rabbit': '#fbbf24',   // amber-400
+  'fox': '#f97316',      // orange-500
+  'leopard': '#ca8a04',  // yellow-600
+  'elephant': '#a855f7'  // purple-500
 };
 
 export type AnimalType = {
@@ -77,10 +77,23 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
   
   // Set up styles based on display context and shape
   let shapeStyles: React.CSSProperties = {
-    width: gridPreview ? '100%' : dimension,
-    height: gridPreview ? '100%' : dimension,
     backgroundColor
   };
+
+  // Add sizing based on context
+  if (gridPreview) {
+    shapeStyles = {
+      ...shapeStyles,
+      width: '100%',
+      height: '100%'
+    };
+  } else {
+    shapeStyles = {
+      ...shapeStyles,
+      width: dimension,
+      height: dimension
+    };
+  }
   
   // Special styling for triangle shape
   if (shape === 'triangle') {
@@ -100,8 +113,7 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
     } else {
       // Grid triangle
       shapeStyles = {
-        width: '100%',
-        height: '100%',
+        ...shapeStyles,
         clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
         backgroundColor
       };
@@ -119,7 +131,7 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
   return (
     <div 
       className={cn(
-        'relative flex items-center justify-center',
+        'relative flex items-center justify-center w-full h-full',
         !preview && 'shape',
         className
       )}
@@ -146,31 +158,37 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
       {/* Special handling for heart shape */}
       {shape === 'heart' && (
         <div className="heart-shape" style={{
+          ...shapeStyles,
           position: 'relative',
-          width: gridPreview ? '100%' : dimension,
-          height: gridPreview ? '100%' : dimension
+          width: gridPreview ? '90%' : dimension,
+          height: gridPreview ? '90%' : dimension,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transform: gridPreview ? 'translateY(-20%)' : 'none',
+          margin: 'auto'
         }}>
           <div style={{
             position: 'absolute',
-            width: '50%',
-            height: '80%',
-            left: 0,
-            top: 0,
+            width: '54%',
+            height: '84%',
+            left: '25%',
+            top: '5%',
             borderRadius: '50%',
             backgroundColor,
-            transform: 'rotate(-45deg)',
-            transformOrigin: 'top right'
+            transform: 'rotate(-40deg)',
+            transformOrigin: '100% 100%'
           }} />
           <div style={{
             position: 'absolute',
-            width: '50%',
-            height: '80%',
-            right: 0,
-            top: 0,
+            width: '54%',
+            height: '84%',
+            right: '35%',
+            top: '5%',
             borderRadius: '50%',
             backgroundColor,
-            transform: 'rotate(45deg)',
-            transformOrigin: 'top left'
+            transform: 'rotate(40deg)',
+            transformOrigin: '0% 100%'
           }} />
         </div>
       )}
