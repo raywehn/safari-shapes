@@ -78,7 +78,7 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
       <div 
         className={cn(
           `shape-${shape}`, 
-          animalName && `animal-${animalName}`
+          animalName && `animal-${animalName.toLowerCase()}`
         )} 
         style={shapeStyles}
       />
