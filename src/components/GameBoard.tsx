@@ -7,6 +7,7 @@ export type CellContent = {
   id: string;
   shape: ShapeType;
   size: SizeType;
+  name?: string;
 } | null;
 
 interface GameBoardProps {
@@ -72,7 +73,12 @@ const GameBoard: React.FC<GameBoardProps> = ({
             onClick={() => handleCellClick(rowIndex, colIndex)}
           >
             {cell && (
-              <ShapeItem shape={cell.shape} size={cell.size} preview={true} />
+              <ShapeItem 
+                shape={cell.shape} 
+                size={cell.size} 
+                preview={true} 
+                animalName={cell.name}
+              />
             )}
             {hoverCell?.row === rowIndex && 
              hoverCell?.col === colIndex && 
@@ -82,6 +88,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
                 size={selectedShape.size} 
                 preview={true} 
                 className="opacity-50" 
+                animalName={selectedShape.name}
               />
             )}
           </div>

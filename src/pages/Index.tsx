@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import GameBoard, { CellContent } from '@/components/GameBoard';
@@ -23,20 +22,20 @@ const createSampleSolution = (): CellContent[][] => {
   const grid: CellContent[][] = Array(5).fill(null).map(() => Array(5).fill(null));
   
   // Place a Mouse (1 point)
-  grid[0][0] = { id: uuidv4(), shape: 'square', size: 'xs' };
+  grid[0][0] = { id: uuidv4(), shape: 'square', size: 'xs', name: 'Mouse' };
   
   // Place a Rabbit (3 points)
-  grid[0][1] = { id: uuidv4(), shape: 'triangle', size: 'sm' };
+  grid[0][1] = { id: uuidv4(), shape: 'triangle', size: 'sm', name: 'Rabbit' };
   
   // Place 2 Foxes (7 points each = 14 points)
-  grid[1][0] = { id: uuidv4(), shape: 'circle', size: 'md' };
-  grid[2][1] = { id: uuidv4(), shape: 'circle', size: 'md' };
+  grid[1][0] = { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' };
+  grid[2][1] = { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' };
   
   // Place a Leopard (12 points)
-  grid[2][2] = { id: uuidv4(), shape: 'square', size: 'lg' };
+  grid[2][2] = { id: uuidv4(), shape: 'square', size: 'lg', name: 'Leopard' };
   
   // Place an Elephant (20 points)
-  grid[3][3] = { id: uuidv4(), shape: 'heart', size: 'xl' };
+  grid[3][3] = { id: uuidv4(), shape: 'heart', size: 'xl', name: 'Elephant' };
   
   // Total: 1 + 3 + 14 + 12 + 20 = 50 points
   return grid;
@@ -83,7 +82,8 @@ const Index: React.FC = () => {
     newBoard[row][col] = {
       id: uuidv4(),
       shape: selectedAnimal.shape,
-      size: selectedAnimal.size
+      size: selectedAnimal.size,
+      name: selectedAnimal.name
     };
     
     setPlayerBoard(newBoard);
@@ -166,7 +166,8 @@ const Index: React.FC = () => {
               selectedShape={selectedAnimal ? {
                 id: 'preview',
                 shape: selectedAnimal.shape,
-                size: selectedAnimal.size
+                size: selectedAnimal.size,
+                name: selectedAnimal.name
               } : null}
             />
           </div>

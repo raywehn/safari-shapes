@@ -51,6 +51,7 @@
     @apply cursor-pointer transition-transform hover:scale-105;
   }
   
+  /* Default shape styles */
   .shape-square {
     @apply bg-blue-500;
   }
@@ -93,6 +94,48 @@
     transform-origin: top left;
   }
 
+  /* Animal-specific colors */
+  .animal-Mouse {
+    @apply bg-gray-400;
+  }
+  
+  .animal-Mouse.shape-square {
+    @apply bg-gray-400;
+  }
+  
+  .animal-Rabbit {
+    border-bottom-color: theme('colors.amber.400') !important;
+  }
+  
+  .animal-Rabbit.shape-triangle {
+    border-bottom-color: theme('colors.amber.400');
+  }
+  
+  .animal-Fox {
+    @apply bg-orange-500;
+  }
+  
+  .animal-Fox.shape-circle {
+    @apply bg-orange-500;
+  }
+  
+  .animal-Leopard {
+    @apply bg-yellow-600 bg-opacity-80;
+  }
+  
+  .animal-Leopard.shape-square {
+    @apply bg-yellow-600 bg-opacity-80;
+  }
+  
+  .animal-Elephant {
+    @apply bg-purple-500;
+  }
+  
+  .animal-Elephant.shape-heart:before,
+  .animal-Elephant.shape-heart:after {
+    @apply bg-purple-500;
+  }
+
   .game-board {
     @apply grid bg-lime-100 border-2 border-lime-700 rounded-md p-2;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -118,3 +161,4 @@
     @apply bg-amber-50 border-2 border-amber-700 rounded-lg p-4 shadow-md;
   }
 }
+

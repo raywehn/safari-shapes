@@ -35,6 +35,7 @@ interface ShapeItemProps {
   className?: string;
   onClick?: () => void;
   preview?: boolean;
+  animalName?: string;
 }
 
 const ShapeItem: React.FC<ShapeItemProps> = ({ 
@@ -42,7 +43,8 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
   size, 
   className,
   onClick,
-  preview = false
+  preview = false,
+  animalName
 }) => {
   const dimension = SIZE_DIMENSIONS[size];
   
@@ -74,7 +76,10 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
       onClick={onClick}
     >
       <div 
-        className={`shape-${shape}`} 
+        className={cn(
+          `shape-${shape}`, 
+          animalName && `animal-${animalName}`
+        )} 
         style={shapeStyles}
       />
       {!preview && (

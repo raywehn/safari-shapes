@@ -29,7 +29,11 @@ const ShapePalette: React.FC<ShapePaletteProps> = ({
             )}
             onClick={() => onSelectShape(animal)}
           >
-            <ShapeItem shape={animal.shape} size={animal.size} />
+            <ShapeItem 
+              shape={animal.shape} 
+              size={animal.size} 
+              animalName={animal.name}
+            />
             <div className="mt-2 text-center">
               <div className="font-medium text-amber-800">{animal.name}</div>
               <div className="text-xs text-amber-600">{SHAPE_POINTS[animal.size]} points</div>
