@@ -53,7 +53,7 @@
   
   /* Default shape styles */
   .shape-square {
-    @apply bg-blue-500;
+    @apply bg-blue-500 rounded-md;
   }
   
   .shape-triangle {
@@ -151,6 +151,10 @@
   
   .board-cell.hover {
     @apply bg-lime-200;
+  }
+
+  .board-cell.invalid-hover {
+    @apply bg-red-200 cursor-not-allowed;
   }
   
   .palette-item {

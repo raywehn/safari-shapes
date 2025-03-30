@@ -23,6 +23,15 @@ export const SIZE_DIMENSIONS: Record<SizeType, number> = {
   'xl': 96
 };
 
+// Grid cell dimensions for each size (how many cells the shape takes up)
+export const SIZE_GRID_CELLS: Record<SizeType, { width: number; height: number }> = {
+  'xs': { width: 1, height: 1 },
+  'sm': { width: 1, height: 1 },
+  'md': { width: 2, height: 2 },
+  'lg': { width: 2, height: 2 },
+  'xl': { width: 3, height: 3 }
+};
+
 export type AnimalType = {
   name: string;
   shape: ShapeType;
@@ -36,6 +45,7 @@ interface ShapeItemProps {
   onClick?: () => void;
   preview?: boolean;
   animalName?: string;
+  gridPreview?: boolean;
 }
 
 const ShapeItem: React.FC<ShapeItemProps> = ({ 
@@ -44,16 +54,18 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
   className,
   onClick,
   preview = false,
-  animalName
+  animalName,
+  gridPreview = false
 }) => {
   const dimension = SIZE_DIMENSIONS[size];
+  const gridCells = SIZE_GRID_CELLS[size];
   
   let shapeStyles: React.CSSProperties = {
-    width: dimension,
-    height: dimension,
+    width: gridPreview ? '100%' : dimension,
+    height: gridPreview ? '100%' : dimension,
   };
   
-  if (shape === 'triangle') {
+  if (shape === 'triangle' && !gridPreview) {
     shapeStyles = {
       ...shapeStyles,
       borderLeftWidth: dimension / 2,
@@ -82,7 +94,7 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
         )} 
         style={shapeStyles}
       />
-      {!preview && (
+      {!preview && !gridPreview && (
         <div className="absolute -bottom-2 -right-2 bg-amber-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
           {points}
         </div>

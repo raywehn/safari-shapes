@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import GameBoard, { CellContent } from '@/components/GameBoard';
 import ShapePalette from '@/components/ShapePalette';
 import GameScore from '@/components/GameScore';
 import GameInstructions from '@/components/GameInstructions';
-import { AnimalType, SHAPE_POINTS } from '@/components/ShapeItem';
+import { AnimalType, SHAPE_POINTS, SIZE_GRID_CELLS } from '@/components/ShapeItem';
 import { toast } from '@/components/ui/use-toast';
 
 // Define our animal enclosures
@@ -21,24 +22,42 @@ const createSampleSolution = (): CellContent[][] => {
   // Create an empty 5x5 grid
   const grid: CellContent[][] = Array(5).fill(null).map(() => Array(5).fill(null));
   
-  // Place a Mouse (1 point)
-  grid[0][0] = { id: uuidv4(), shape: 'square', size: 'xs', name: 'Mouse' };
+  // Place a Mouse (1 point, 1x1)
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'square', size: 'xs', name: 'Mouse' }, 0, 0);
   
-  // Place a Rabbit (3 points)
-  grid[0][1] = { id: uuidv4(), shape: 'triangle', size: 'sm', name: 'Rabbit' };
+  // Place a Rabbit (3 points, 1x1)
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'triangle', size: 'sm', name: 'Rabbit' }, 0, 1);
   
-  // Place 2 Foxes (7 points each = 14 points)
-  grid[1][0] = { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' };
-  grid[2][1] = { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' };
+  // Place 2 Foxes (7 points each = 14 points, 2x2 each)
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' }, 1, 0);
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' }, 3, 2);
   
-  // Place a Leopard (12 points)
-  grid[2][2] = { id: uuidv4(), shape: 'square', size: 'lg', name: 'Leopard' };
+  // Place a Leopard (12 points, 2x2)
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'square', size: 'lg', name: 'Leopard' }, 1, 3);
   
-  // Place an Elephant (20 points)
-  grid[3][3] = { id: uuidv4(), shape: 'heart', size: 'xl', name: 'Elephant' };
+  // Place an Elephant (20 points, 3x3)
+  placeShapeOnGrid(grid, { id: uuidv4(), shape: 'heart', size: 'xl', name: 'Elephant' }, 2, 0);
   
   // Total: 1 + 3 + 14 + 12 + 20 = 50 points
   return grid;
+};
+
+// Helper function to place a shape on the grid
+const placeShapeOnGrid = (grid: CellContent[][], shape: CellContent, row: number, col: number) => {
+  if (!shape) return;
+  
+  const gridCells = SIZE_GRID_CELLS[shape.size];
+  
+  // Fill all cells that the shape occupies
+  for (let r = 0; r < gridCells.height; r++) {
+    for (let c = 0; c < gridCells.width; c++) {
+      // Copy the shape data to each cell
+      grid[row + r][col + c] = {
+        ...shape,
+        origin: { row, col } // Store the origin coordinates
+      };
+    }
+  }
 };
 
 const Index: React.FC = () => {
@@ -55,13 +74,17 @@ const Index: React.FC = () => {
   
   // Calculate score based on shapes on the board
   const calculateScore = (board: CellContent[][]) => {
+    // Create a Set to track which unique shapes we've already counted
+    const countedShapes = new Set<string>();
     let score = 0;
     
     for (let row = 0; row < board.length; row++) {
       for (let col = 0; col < board[row].length; col++) {
         const cell = board[row][col];
-        if (cell) {
+        if (cell && (!cell.origin || (cell.origin.row === row && cell.origin.col === col))) {
+          // Only count origins of shapes to avoid double counting
           score += SHAPE_POINTS[cell.size];
+          countedShapes.add(cell.id);
         }
       }
     }
@@ -76,16 +99,48 @@ const Index: React.FC = () => {
   
   // Handle placing a shape on the board
   const handleCellClick = (row: number, col: number) => {
-    if (!selectedAnimal || playerBoard[row][col]) return;
+    if (!selectedAnimal) return;
     
-    const newBoard = [...playerBoard];
-    newBoard[row][col] = {
+    // Check if we can place the shape here
+    const gridCells = SIZE_GRID_CELLS[selectedAnimal.size];
+    
+    // Check boundaries
+    if (row + gridCells.height > BOARD_SIZE || col + gridCells.width > BOARD_SIZE) {
+      toast({
+        title: "Can't place here",
+        description: "The animal enclosure doesn't fit within the boundaries.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Check if any cells are already occupied
+    for (let r = 0; r < gridCells.height; r++) {
+      for (let c = 0; c < gridCells.width; c++) {
+        if (playerBoard[row + r][col + c] !== null) {
+          toast({
+            title: "Can't place here",
+            description: "Some cells are already occupied by another animal.",
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+    }
+    
+    // Create a new board and place the shape
+    const newBoard = [...playerBoard.map(row => [...row])];
+    
+    // Create the shape
+    const newShape: CellContent = {
       id: uuidv4(),
       shape: selectedAnimal.shape,
       size: selectedAnimal.size,
       name: selectedAnimal.name
     };
     
+    // Place the shape on the board
+    placeShapeOnGrid(newBoard, newShape, row, col);
     setPlayerBoard(newBoard);
     
     // Update score
