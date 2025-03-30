@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import GameBoard, { CellContent } from '@/components/GameBoard';
@@ -236,7 +235,7 @@ const Index: React.FC = () => {
               cells={sampleSolution}
               selectedShape={null}
               readOnly={true}
-              className="opacity-80"
+              className="opacity-90"
             />
             <p className="mt-3 text-amber-700 text-center">
               This sample layout guarantees exactly 50 points

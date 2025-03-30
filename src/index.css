@@ -56,58 +56,6 @@
     @apply rounded-md;
   }
   
-  .shape-triangle {
-    @apply border-solid border-transparent;
-    border-bottom-color: theme('colors.green.500');
-  }
-  
-  /* Heart shape styling */
-  .heart-shape {
-    position: relative;
-  }
-  
-  .heart-shape:before,
-  .heart-shape:after {
-    content: "";
-    @apply absolute rounded-full;
-    width: 50%;
-    height: 80%;
-    top: 0;
-  }
-  
-  .heart-shape:before {
-    left: 0;
-    transform: rotate(-45deg);
-    transform-origin: top right;
-  }
-  
-  .heart-shape:after {
-    right: 0;
-    transform: rotate(45deg);
-    transform-origin: top left;
-  }
-
-  /* Shape background colors - using direct color values instead of circular references */
-  .heart-shape.mouse:before, .heart-shape.mouse:after {
-    background-color: #9ca3af; /* gray-400 equivalent */
-  }
-  
-  .heart-shape.rabbit:before, .heart-shape.rabbit:after {
-    background-color: #fbbf24; /* amber-400 equivalent */
-  }
-  
-  .heart-shape.fox:before, .heart-shape.fox:after {
-    background-color: #f97316; /* orange-500 equivalent */
-  }
-  
-  .heart-shape.leopard:before, .heart-shape.leopard:after {
-    background-color: #ca8a04; /* yellow-600 equivalent */
-  }
-  
-  .heart-shape.elephant:before, .heart-shape.elephant:after {
-    background-color: #a855f7; /* purple-500 equivalent */
-  }
-
   .game-board {
     @apply grid bg-lime-100 border-2 border-lime-700 rounded-md p-2;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);

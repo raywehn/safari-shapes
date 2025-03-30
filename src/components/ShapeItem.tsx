@@ -67,12 +67,38 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
   gridPreview = false
 }) => {
   const dimension = SIZE_DIMENSIONS[size];
+  const animalNameLower = animalName?.toLowerCase() || '';
   
   // Generate shape styles
   let shapeStyles: React.CSSProperties = {
     width: gridPreview ? '100%' : dimension,
     height: gridPreview ? '100%' : dimension,
   };
+  
+  let colorStyle: React.CSSProperties = {};
+  
+  // Get color based on animal
+  if (animalNameLower) {
+    switch (animalNameLower) {
+      case 'mouse':
+        colorStyle.backgroundColor = '#9ca3af'; // gray-400
+        break;
+      case 'rabbit':
+        colorStyle.backgroundColor = '#fbbf24'; // amber-400
+        break;
+      case 'fox':
+        colorStyle.backgroundColor = '#f97316'; // orange-500
+        break;
+      case 'leopard':
+        colorStyle.backgroundColor = '#ca8a04'; // yellow-600
+        break;
+      case 'elephant':
+        colorStyle.backgroundColor = '#a855f7'; // purple-500
+        break;
+      default:
+        colorStyle.backgroundColor = '#10b981'; // Default color
+    }
+  }
   
   // Special handling for triangle
   if (shape === 'triangle') {
@@ -83,25 +109,27 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
         borderRightWidth: dimension / 2,
         borderBottomWidth: dimension,
         width: 0,
-        height: 0
+        height: 0,
+        borderBottomColor: colorStyle.backgroundColor || '#10b981',
+        borderLeftColor: 'transparent',
+        borderRightColor: 'transparent'
+      };
+      colorStyle = {}; // Reset color style as we set it directly in the shape
+    } else {
+      // When in grid, render a colored div instead with triangle shape
+      shapeStyles = {
+        ...shapeStyles,
+        clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+        ...colorStyle
       };
     }
   }
   
-  // Heart special styling
+  // For heart shape, we'll use different styling
   const isHeart = shape === 'heart';
+  const heartColor = colorStyle.backgroundColor;
   
   const points = SHAPE_POINTS[size];
-  
-  // Get the animal color class for non-heart shapes
-  const animalColorClass = animalName ? 
-    ANIMAL_COLORS[animalName.toLowerCase()] || '' : '';
-  
-  // Get the animal name for heart shape classes
-  const animalNameLower = animalName ? animalName.toLowerCase() : '';
-  
-  // Create the shape base class
-  const shapeBaseClass = `shape-${shape}`;
   
   return (
     <div 
@@ -118,28 +146,51 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
         <div 
           className={cn(
             shapeBaseClass,
-            animalColorClass,
             shape === 'circle' && 'rounded-full',
-            shape === 'square' && 'rounded-md',
-            shape === 'triangle' && 'border-solid border-transparent'
+            shape === 'square' && 'rounded-md'
           )}
           style={{
             ...shapeStyles,
-            borderBottomColor: shape === 'triangle' ? 
-              (animalNameLower === 'rabbit' ? '#fbbf24' : '#10b981') : undefined
+            ...(shape !== 'triangle' ? colorStyle : {})
           }}
         />
       )}
       
       {/* Special handling for heart shape */}
       {isHeart && (
-        <div 
-          className={cn(
-            'heart-shape',
-            animalNameLower && animalNameLower // Apply the animal name as a class for hearts
-          )}
-          style={shapeStyles}
-        />
+        <div className="heart-shape-container" style={shapeStyles}>
+          <div 
+            className="heart-shape"
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%'
+            }}
+          >
+            <div style={{
+              position: 'absolute',
+              width: '50%',
+              height: '80%',
+              left: 0,
+              top: 0,
+              borderRadius: '50%',
+              backgroundColor: heartColor,
+              transform: 'rotate(-45deg)',
+              transformOrigin: 'top right'
+            }} />
+            <div style={{
+              position: 'absolute',
+              width: '50%',
+              height: '80%',
+              right: 0,
+              top: 0,
+              borderRadius: '50%',
+              backgroundColor: heartColor,
+              transform: 'rotate(45deg)',
+              transformOrigin: 'top left'
+            }} />
+          </div>
+        </div>
       )}
       
       {/* Points indicator */}

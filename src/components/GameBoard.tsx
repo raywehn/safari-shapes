@@ -87,6 +87,16 @@ const GameBoard: React.FC<GameBoardProps> = ({
     return cell.origin.row !== row || cell.origin.col !== col;
   };
 
+  const getShapeOrigin = (row: number, col: number) => {
+    const cell = cells[row][col];
+    if (!cell || !cell.origin) return null;
+    
+    return {
+      row: cell.origin.row,
+      col: cell.origin.col
+    };
+  };
+
   return (
     <div 
       className={cn('game-board', className)} 
@@ -103,8 +113,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
                                   canPlaceShape(rowIndex, colIndex, selectedShape);
           
           const isHovered = shouldShowHover(rowIndex, colIndex);
-          const isOriginCell = cell && (!cell.origin || 
-                              (cell.origin.row === rowIndex && cell.origin.col === colIndex));
+          const origin = getShapeOrigin(rowIndex, colIndex);
+          const isOriginCell = cell && (!origin || (origin.row === rowIndex && origin.col === colIndex));
           
           return (
             <div
@@ -120,15 +130,21 @@ const GameBoard: React.FC<GameBoardProps> = ({
               onMouseLeave={handleMouseLeave}
               onClick={() => handleCellClick(rowIndex, colIndex)}
             >
-              {cell && isOriginCell && (
-                <ShapeItem 
-                  shape={cell.shape} 
-                  size={cell.size} 
-                  preview={false}
-                  gridPreview={true}
-                  animalName={cell.name}
-                />
+              {cell && origin && (
+                <React.Fragment>
+                  {/* If this is the origin cell, render the full shape */}
+                  {isOriginCell && (
+                    <ShapeItem 
+                      shape={cell.shape} 
+                      size={cell.size} 
+                      preview={false}
+                      gridPreview={true}
+                      animalName={cell.name}
+                    />
+                  )}
+                </React.Fragment>
               )}
+              
               {isHovered && isValidPlacement && selectedShape && rowIndex === hoverCell?.row && colIndex === hoverCell?.col && (
                 <ShapeItem 
                   shape={selectedShape.shape} 
