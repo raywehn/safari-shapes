@@ -93,9 +93,12 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
   
   const points = SHAPE_POINTS[size];
   
-  // Get the animal color class
+  // Get the animal color class for non-heart shapes
   const animalColorClass = animalName ? 
     ANIMAL_COLORS[animalName.toLowerCase()] || '' : '';
+  
+  // Get the animal name for heart shape classes
+  const animalNameLower = animalName ? animalName.toLowerCase() : '';
   
   // Create the shape base class
   const shapeBaseClass = `shape-${shape}`;
@@ -108,7 +111,7 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
         className
       )}
       onClick={onClick}
-      data-animal={animalName?.toLowerCase()}
+      data-animal={animalNameLower}
     >
       {/* For non-heart shapes, use a single div with the right styling */}
       {!isHeart && (
@@ -123,7 +126,7 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
           style={{
             ...shapeStyles,
             borderBottomColor: shape === 'triangle' ? 
-              (animalName?.toLowerCase() === 'rabbit' ? '#fbbf24' : '#10b981') : undefined
+              (animalNameLower === 'rabbit' ? '#fbbf24' : '#10b981') : undefined
           }}
         />
       )}
@@ -133,7 +136,7 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
         <div 
           className={cn(
             'heart-shape',
-            animalColorClass
+            animalNameLower && animalNameLower // Apply the animal name as a class for hearts
           )}
           style={shapeStyles}
         />

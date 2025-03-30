@@ -87,25 +87,25 @@
     transform-origin: top left;
   }
 
-  /* Shape background colors - using the same classes as in ShapeItem.tsx */
-  .bg-gray-400:before, .bg-gray-400:after {
-    @apply bg-gray-400;
+  /* Shape background colors - using direct color values instead of circular references */
+  .heart-shape.mouse:before, .heart-shape.mouse:after {
+    background-color: #9ca3af; /* gray-400 equivalent */
   }
   
-  .bg-amber-400:before, .bg-amber-400:after {
-    @apply bg-amber-400;
+  .heart-shape.rabbit:before, .heart-shape.rabbit:after {
+    background-color: #fbbf24; /* amber-400 equivalent */
   }
   
-  .bg-orange-500:before, .bg-orange-500:after {
-    @apply bg-orange-500;
+  .heart-shape.fox:before, .heart-shape.fox:after {
+    background-color: #f97316; /* orange-500 equivalent */
   }
   
-  .bg-yellow-600:before, .bg-yellow-600:after {
-    @apply bg-yellow-600;
+  .heart-shape.leopard:before, .heart-shape.leopard:after {
+    background-color: #ca8a04; /* yellow-600 equivalent */
   }
   
-  .bg-purple-500:before, .bg-purple-500:after {
-    @apply bg-purple-500;
+  .heart-shape.elephant:before, .heart-shape.elephant:after {
+    background-color: #a855f7; /* purple-500 equivalent */
   }
 
   .game-board {
