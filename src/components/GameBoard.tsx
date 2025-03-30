@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import ShapeItem, { ShapeType, SizeType, SHAPE_POINTS, SIZE_GRID_CELLS } from './ShapeItem';
+import ShapeItem, { ShapeType, SizeType, SIZE_GRID_CELLS } from './ShapeItem';
 import { cn } from '@/lib/utils';
 
 export type CellContent = {
@@ -103,7 +104,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           
           const isHovered = shouldShowHover(rowIndex, colIndex);
           const isOriginCell = cell && (!cell.origin || 
-                               (cell.origin.row === rowIndex && cell.origin.col === colIndex));
+                              (cell.origin.row === rowIndex && cell.origin.col === colIndex));
           
           return (
             <div

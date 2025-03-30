@@ -32,6 +32,15 @@ export const SIZE_GRID_CELLS: Record<SizeType, { width: number; height: number }
   'xl': { width: 3, height: 3 }
 };
 
+// Animal color mapping
+export const ANIMAL_COLORS: Record<string, string> = {
+  'mouse': 'bg-gray-400',
+  'rabbit': 'bg-amber-400',
+  'fox': 'bg-orange-500',
+  'leopard': 'bg-yellow-600',
+  'elephant': 'bg-purple-500'
+};
+
 export type AnimalType = {
   name: string;
   shape: ShapeType;
@@ -58,31 +67,38 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
   gridPreview = false
 }) => {
   const dimension = SIZE_DIMENSIONS[size];
-  const gridCells = SIZE_GRID_CELLS[size];
   
+  // Generate shape styles
   let shapeStyles: React.CSSProperties = {
     width: gridPreview ? '100%' : dimension,
     height: gridPreview ? '100%' : dimension,
   };
   
-  if (shape === 'triangle' && !gridPreview) {
-    shapeStyles = {
-      ...shapeStyles,
-      borderLeftWidth: dimension / 2,
-      borderRightWidth: dimension / 2,
-      borderBottomWidth: dimension,
-      height: 0,
-      width: 0
-    };
+  // Special handling for triangle
+  if (shape === 'triangle') {
+    if (!gridPreview) {
+      shapeStyles = {
+        ...shapeStyles,
+        borderLeftWidth: dimension / 2,
+        borderRightWidth: dimension / 2,
+        borderBottomWidth: dimension,
+        width: 0,
+        height: 0
+      };
+    }
   }
   
+  // Heart special styling
+  const isHeart = shape === 'heart';
+  
   const points = SHAPE_POINTS[size];
-
-  // Create the class names for the shape with animal-specific styling
-  const shapeClassName = cn(
-    `shape-${shape}`,
-    animalName && `animal-${animalName.toLowerCase()}`
-  );
+  
+  // Get the animal color class
+  const animalColorClass = animalName ? 
+    ANIMAL_COLORS[animalName.toLowerCase()] || '' : '';
+  
+  // Create the shape base class
+  const shapeBaseClass = `shape-${shape}`;
   
   return (
     <div 
@@ -92,11 +108,38 @@ const ShapeItem: React.FC<ShapeItemProps> = ({
         className
       )}
       onClick={onClick}
+      data-animal={animalName?.toLowerCase()}
     >
-      <div 
-        className={shapeClassName}
-        style={shapeStyles}
-      />
+      {/* For non-heart shapes, use a single div with the right styling */}
+      {!isHeart && (
+        <div 
+          className={cn(
+            shapeBaseClass,
+            animalColorClass,
+            shape === 'circle' && 'rounded-full',
+            shape === 'square' && 'rounded-md',
+            shape === 'triangle' && 'border-solid border-transparent'
+          )}
+          style={{
+            ...shapeStyles,
+            borderBottomColor: shape === 'triangle' ? 
+              (animalName?.toLowerCase() === 'rabbit' ? '#fbbf24' : '#10b981') : undefined
+          }}
+        />
+      )}
+      
+      {/* Special handling for heart shape */}
+      {isHeart && (
+        <div 
+          className={cn(
+            'heart-shape',
+            animalColorClass
+          )}
+          style={shapeStyles}
+        />
+      )}
+      
+      {/* Points indicator */}
       {!preview && !gridPreview && (
         <div className="absolute -bottom-2 -right-2 bg-amber-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
           {points}

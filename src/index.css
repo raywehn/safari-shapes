@@ -51,115 +51,61 @@
     @apply cursor-pointer transition-transform hover:scale-105;
   }
   
-  /* Default shape styles */
+  /* Basic shape styles */
   .shape-square {
-    @apply bg-blue-500 rounded-md;
+    @apply rounded-md;
   }
   
   .shape-triangle {
     @apply border-solid border-transparent;
     border-bottom-color: theme('colors.green.500');
-    transform-origin: bottom center;
-    width: 0;
-    height: 0;
   }
   
-  .shape-circle {
-    @apply bg-yellow-500 rounded-full;
-  }
-  
-  .shape-heart {
-    @apply bg-red-500;
+  /* Heart shape styling */
+  .heart-shape {
     position: relative;
   }
   
-  .shape-heart:before,
-  .shape-heart:after {
+  .heart-shape:before,
+  .heart-shape:after {
     content: "";
-    @apply bg-red-500 absolute rounded-full;
+    @apply absolute rounded-full;
     width: 50%;
     height: 80%;
     top: 0;
   }
   
-  .shape-heart:before {
+  .heart-shape:before {
     left: 0;
     transform: rotate(-45deg);
     transform-origin: top right;
   }
   
-  .shape-heart:after {
+  .heart-shape:after {
     right: 0;
     transform: rotate(45deg);
     transform-origin: top left;
   }
 
-  /* Animal-specific colors - using stronger selectors with !important to override defaults */
-  .animal-mouse {
-    @apply bg-gray-400 !important;
+  /* Shape background colors - using the same classes as in ShapeItem.tsx */
+  .bg-gray-400:before, .bg-gray-400:after {
+    @apply bg-gray-400;
   }
   
-  .animal-mouse.shape-square {
-    @apply bg-gray-400 !important;
+  .bg-amber-400:before, .bg-amber-400:after {
+    @apply bg-amber-400;
   }
   
-  .animal-rabbit {
-    @apply bg-amber-400 !important;
+  .bg-orange-500:before, .bg-orange-500:after {
+    @apply bg-orange-500;
   }
   
-  .animal-rabbit.shape-triangle {
-    border-bottom-color: theme('colors.amber.400') !important;
+  .bg-yellow-600:before, .bg-yellow-600:after {
+    @apply bg-yellow-600;
   }
   
-  .animal-fox {
-    @apply bg-orange-500 !important;
-  }
-  
-  .animal-fox.shape-circle {
-    @apply bg-orange-500 !important;
-  }
-  
-  .animal-leopard {
-    @apply bg-yellow-600 !important;
-  }
-  
-  .animal-leopard.shape-square {
-    @apply bg-yellow-600 !important;
-  }
-  
-  .animal-elephant {
-    @apply bg-purple-500 !important;
-  }
-  
-  .animal-elephant.shape-heart:before,
-  .animal-elephant.shape-heart:after {
-    @apply bg-purple-500 !important;
-  }
-
-  /* Ensure colors are applied on the grid by making them more specific */
-  .board-cell .animal-mouse {
-    @apply bg-gray-400 !important;
-  }
-  
-  .board-cell .animal-rabbit.shape-triangle {
-    border-bottom-color: theme('colors.amber.400') !important;
-  }
-  
-  .board-cell .animal-fox {
-    @apply bg-orange-500 !important;
-  }
-  
-  .board-cell .animal-leopard {
-    @apply bg-yellow-600 !important;
-  }
-  
-  .board-cell .animal-elephant {
-    @apply bg-purple-500 !important;
-  }
-  
-  .board-cell .animal-elephant.shape-heart:before,
-  .board-cell .animal-elephant.shape-heart:after {
-    @apply bg-purple-500 !important;
+  .bg-purple-500:before, .bg-purple-500:after {
+    @apply bg-purple-500;
   }
 
   .game-board {
