@@ -6,12 +6,12 @@ export type ShapeType = 'square' | 'triangle' | 'circle' | 'heart';
 export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 // Points for each size
-export const SHAPE_POINTS: Record<SizeType, number> = {
-  'xs': 1,
-  'sm': 3, 
-  'md': 7,
-  'lg': 12,
-  'xl': 20
+export const SHAPE_POINTS = {
+  'xs': 2,  // Was 1
+  'sm': 5,  // Was 3
+  'md': 6,  // Was 7 
+  'lg': 15, // Was 12
+  'xl': 18, // Was 20
 };
 
 // Size dimensions in pixels

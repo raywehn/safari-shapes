@@ -122,6 +122,10 @@ const GameBoard: React.FC<GameBoardProps> = ({
           
           // Is this the origin cell of a shape?
           const isOrigin = isOriginCell(rowIndex, colIndex);
+
+          // Check if the entire shape area can be placed
+          const canPlaceEntireShape = selectedShape && hoverCell && 
+            canPlaceShape(hoverCell.row, hoverCell.col, selectedShape);
           
           return (
             <div
@@ -129,7 +133,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
               className={cn(
                 'board-cell',
                 cell && 'occupied',
-                isHovered && (isValidPlacement ? 'hover' : 'invalid-hover'),
+                isHovered && (canPlaceEntireShape ? 'hover' : 'invalid-hover'),
                 readOnly && 'cursor-default'
               )}
               style={{ width: cellSize, height: cellSize }}
@@ -137,7 +141,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
               onMouseLeave={handleMouseLeave}
               onClick={() => handleCellClick(rowIndex, colIndex)}
             >
-              {/* If this is the origin cell of a shape, render it */}
               {/* If this is the origin cell of a shape, render it */}
               {cell && isOrigin && (
                 <div className="w-full h-full flex items-center justify-center relative"
