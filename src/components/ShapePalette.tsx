@@ -1,7 +1,7 @@
-
 import React from 'react';
-import ShapeItem, { AnimalType, SHAPE_POINTS } from './ShapeItem';
 import { cn } from '@/lib/utils';
+import ShapeItem from './ShapeItem';
+import { AnimalType, SHAPE_POINTS } from './ShapeItem';
 
 interface ShapePaletteProps {
   shapes: AnimalType[];
@@ -19,7 +19,7 @@ const ShapePalette: React.FC<ShapePaletteProps> = ({
   return (
     <div className={cn('safari-card', className)}>
       <h2 className="text-xl font-bold mb-3 text-amber-900">Animal Enclosures</h2>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
         {shapes.map((animal) => (
           <div
             key={`${animal.shape}-${animal.size}`}

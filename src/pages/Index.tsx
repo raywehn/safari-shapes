@@ -299,68 +299,73 @@ const Index: React.FC = () => {
           Safari Shapes
         </h1>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column: Instructions, Score, and Palette */}
-          <div className="space-y-6">
-            <GameInstructions 
-              onStartNewRound={startNewRound}
-              currentScore={currentScore}
-              round={currentRound}
-              isRoundComplete={isRoundComplete}
-            />
+        <div className="flex flex-col gap-6">
+          {/* Game controls and boards */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left column: Instructions and Score */}
+            <div className="space-y-6">
+              <GameInstructions 
+                onStartNewRound={startNewRound}
+                currentScore={currentScore}
+                round={currentRound}
+                isRoundComplete={isRoundComplete}
+              />
+              
+              <GameScore 
+                currentScore={currentScore}
+              />
+            </div>
             
-            <GameScore 
-              currentScore={currentScore}
-            />
+            {/* Middle column: Player's Game Board */}
+            <div className="flex flex-col items-center">
+              <h2 className="text-xl font-bold mb-3 text-amber-900">Your Safari</h2>
+              <GameBoard 
+                size={BOARD_SIZE}
+                cellSize={CELL_SIZE}
+                cells={playerBoard}
+                onCellClick={handleCellClick}
+                onRemoveShape={handleRemoveShape}
+                selectedShape={selectedAnimal ? {
+                  id: 'preview',
+                  shape: selectedAnimal.shape,
+                  size: selectedAnimal.size,
+                  name: selectedAnimal.name
+                } : null}
+              />
+            </div>
             
-            <ShapePalette 
-              shapes={ANIMALS} 
-              onSelectShape={handleSelectAnimal}
-              selectedAnimal={selectedAnimal}
-            />
+            {/* Right column: Sample Solution */}
+            <div className="flex flex-col items-center">
+              <h2 className="text-xl font-bold mb-3 text-amber-900">
+                {currentRound === 2 ? "No Sample Layout" : "Sample Layout (50 points)"}
+              </h2>
+              {currentRound !== 2 && (
+                <>
+                  <GameBoard 
+                    size={BOARD_SIZE}
+                    cellSize={CELL_SIZE}
+                    cells={sampleSolution}
+                    selectedShape={null}
+                    readOnly={true}
+                    className="opacity-90"
+                  />
+                  <p className="mt-3 text-amber-700 text-center">
+                    {currentRound === 1 
+                      ? "Copy this layout exactly to complete the round"
+                      : "You can use this layout as inspiration"}
+                  </p>
+                </>
+              )}
+            </div>
           </div>
           
-          {/* Middle column: Player's Game Board */}
-          <div className="flex flex-col items-center">
-            <h2 className="text-xl font-bold mb-3 text-amber-900">Your Safari</h2>
-            <GameBoard 
-              size={BOARD_SIZE}
-              cellSize={CELL_SIZE}
-              cells={playerBoard}
-              onCellClick={handleCellClick}
-              onRemoveShape={handleRemoveShape}
-              selectedShape={selectedAnimal ? {
-                id: 'preview',
-                shape: selectedAnimal.shape,
-                size: selectedAnimal.size,
-                name: selectedAnimal.name
-              } : null}
-            />
-          </div>
-          
-          {/* Right column: Sample Solution */}
-          <div className="flex flex-col items-center">
-            <h2 className="text-xl font-bold mb-3 text-amber-900">
-              {currentRound === 2 ? "No Sample Layout" : "Sample Layout (50 points)"}
-            </h2>
-            {currentRound !== 2 && (
-              <>
-                <GameBoard 
-                  size={BOARD_SIZE}
-                  cellSize={CELL_SIZE}
-                  cells={sampleSolution}
-                  selectedShape={null}
-                  readOnly={true}
-                  className="opacity-90"
-                />
-                <p className="mt-3 text-amber-700 text-center">
-                  {currentRound === 1 
-                    ? "Copy this layout exactly to complete the round"
-                    : "You can use this layout as inspiration"}
-                </p>
-              </>
-            )}
-          </div>
+          {/* Animal Selection Palette - spans full width */}
+          <ShapePalette 
+            shapes={ANIMALS} 
+            onSelectShape={handleSelectAnimal}
+            selectedAnimal={selectedAnimal}
+            className="w-full"
+          />
         </div>
       </div>
     </div>
