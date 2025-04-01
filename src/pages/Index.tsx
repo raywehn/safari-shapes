@@ -499,7 +499,7 @@ const Index: React.FC = () => {
             {/* Right column: Sample Solution */}
             <div className="flex flex-col items-center">
               <h2 className="text-xl font-bold mb-3 text-amber-900">
-                {currentRound === 2 ? "No Sample Layout" : "Sample Layout (50 points)"}
+                {currentRound === 2 ? "No Sample Layout" : "Sample Layout (52 points)"}
               </h2>
               {currentRound !== 2 && (
                 <>
