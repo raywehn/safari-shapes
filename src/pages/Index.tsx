@@ -89,7 +89,6 @@ const createSampleSolution = (): CellContent[][] => {
 const Index: React.FC = () => {
   const BOARD_SIZE = 5;
   const CELL_SIZE = 80;
-  const TARGET_SCORE = 50;
   
   const [sampleSolution, setSampleSolution] = useState<CellContent[][]>(createSampleSolution());
   const [playerBoard, setPlayerBoard] = useState<CellContent[][]>(
@@ -97,6 +96,7 @@ const Index: React.FC = () => {
   );
   const [selectedAnimal, setSelectedAnimal] = useState<AnimalType | null>(null);
   const [currentScore, setCurrentScore] = useState<number>(0);
+  
   
   // Calculate score based on shapes on the board
   const calculateScore = (board: CellContent[][]) => {
@@ -173,13 +173,6 @@ const Index: React.FC = () => {
     const newScore = calculateScore(newBoard);
     setCurrentScore(newScore);
     
-    // Check if the target score has been reached
-    if (newScore >= TARGET_SCORE && currentScore < TARGET_SCORE) {
-      toast({
-        title: "Round Complete!",
-        description: `You've reached the target score of ${TARGET_SCORE} points!`,
-      });
-    }
   };
 
   // Handle removing a shape from the board
@@ -222,7 +215,7 @@ const Index: React.FC = () => {
     
     toast({
       title: "New Round Started",
-      description: "The board has been cleared. Try to reach 50 points!",
+      description: "The board has been cleared. Try to maximize your score!",
     });
   };
   
@@ -237,6 +230,7 @@ const Index: React.FC = () => {
     console.log(`Sample solution score: ${sampleScore}`);
   }, [sampleSolution]);
   
+  // In the return statement, update the GameInstructions and GameScore props:
   return (
     <div className="min-h-screen bg-lime-50 py-10">
       <div className="container mx-auto px-4">
@@ -250,12 +244,10 @@ const Index: React.FC = () => {
             <GameInstructions 
               onStartNewRound={startNewRound}
               currentScore={currentScore}
-              targetScore={TARGET_SCORE}
             />
             
             <GameScore 
-              currentScore={currentScore} 
-              targetScore={TARGET_SCORE} 
+              currentScore={currentScore}
             />
             
             <ShapePalette 
