@@ -6,6 +6,8 @@ import GameScore from '@/components/GameScore';
 import GameInstructions from '@/components/GameInstructions';
 import { AnimalType, SHAPE_POINTS, SIZE_GRID_CELLS } from '@/components/ShapeItem';
 import { toast } from '@/components/ui/use-toast';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 // Define our animal enclosures
 const ANIMALS: AnimalType[] = [
@@ -105,6 +107,40 @@ const countUniqueShapes = (board: CellContent[][]): number => {
   return uniqueOrigins.size;
 };
 
+// Calculate similarity between two layouts (for explore-exploit score)
+const calculateLayoutSimilarity = (layout1: CellContent[][], layout2: CellContent[][]): number => {
+  if (layout1.length !== layout2.length || layout1[0].length !== layout2[0].length) {
+    return 0;
+  }
+
+  let matchingCells = 0;
+  let totalCells = 0;
+  
+  for (let row = 0; row < layout1.length; row++) {
+    for (let col = 0; col < layout1[0].length; col++) {
+      const cell1 = layout1[row][col];
+      const cell2 = layout2[row][col];
+      
+      // Count occupied cells
+      if (cell1 !== null || cell2 !== null) {
+        totalCells++;
+        
+        // Check if they match
+        if ((cell1 === null && cell2 === null) || 
+            (cell1 !== null && cell2 !== null && 
+             cell1.shape === cell2.shape && 
+             cell1.size === cell2.size && 
+             cell1.name === cell2.name)) {
+          matchingCells++;
+        }
+      }
+    }
+  }
+  
+  // Return percentage of matching cells (0-100)
+  return totalCells > 0 ? (matchingCells / totalCells) * 100 : 0;
+};
+
 // Sample layout for guaranteed 50 points
 const createSampleSolution = (): CellContent[][] => {
   const grid: CellContent[][] = Array(5).fill(null).map(() => Array(5).fill(null));
@@ -119,6 +155,86 @@ const createSampleSolution = (): CellContent[][] => {
   return grid;
 }
 
+// Ending Screen Component
+interface EndScreenProps {
+  exploreExploitScore: number;
+  finalScore: number;
+  onReset: () => void;
+}
+
+const EndScreen: React.FC<EndScreenProps> = ({ exploreExploitScore, finalScore, onReset }) => {
+  const explorationLevel = exploreExploitScore > 75 ? "High Exploration" :
+                          exploreExploitScore > 25 ? "Balanced Approach" : "High Exploitation";
+  
+  return (
+    <div className="safari-card w-full max-w-3xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4 text-amber-900 text-center">Experiment Complete!</h2>
+      
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-xl font-bold text-amber-800 mb-2">Your Final Score: {finalScore} points</h3>
+          <p className="text-amber-700">
+            This reflects how well you optimized your animal enclosure placement.
+          </p>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-bold text-amber-800 mb-2">Explore-Exploit Measurement</h3>
+          
+          <div className="bg-white p-4 rounded-md border border-amber-200 mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-semibold text-amber-800">Exploration</span>
+              <span className="font-semibold text-amber-800">Exploitation</span>
+            </div>
+            
+            <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
+              <div 
+                className="bg-green-500 h-4 rounded-full" 
+                style={{ width: `${100 - exploreExploitScore}%`, marginLeft: `${exploreExploitScore}%` }}
+              />
+            </div>
+            
+            <div className="text-center font-semibold text-lg text-amber-900 mt-2">
+              {explorationLevel}
+            </div>
+            
+            <p className="mt-4 text-amber-700">
+              <strong>Score: {Math.round(100 - exploreExploitScore)}% Exploitation / {Math.round(exploreExploitScore)}% Exploration</strong>
+            </p>
+            
+            <div className="mt-4 text-sm text-amber-600">
+              <p className="mb-2">
+                <strong>What this means:</strong>
+              </p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>
+                  <strong>Exploration:</strong> Creating your own unique layout, trying new approaches
+                </li>
+                <li>
+                  <strong>Exploitation:</strong> Using the sample layout that was known to work well
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <p className="text-amber-700">
+            In decision-making, there's often a trade-off between exploring new possibilities and exploiting known successful strategies. Your score reflects your natural tendency toward one approach or a balance between them.
+          </p>
+        </div>
+        
+        <div className="mt-6">
+          <Button 
+            className="w-full bg-primary hover:bg-primary/90"
+            onClick={onReset}
+          >
+            Start New Experiment
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Index: React.FC = () => {
   const BOARD_SIZE = 5;
   const CELL_SIZE = 80;
@@ -131,6 +247,8 @@ const Index: React.FC = () => {
   const [selectedAnimal, setSelectedAnimal] = useState<AnimalType | null>(null);
   const [currentScore, setCurrentScore] = useState<number>(0);
   const [isRoundComplete, setIsRoundComplete] = useState<boolean>(false);
+  const [experimentComplete, setExperimentComplete] = useState<boolean>(false);
+  const [exploreExploitScore, setExploreExploitScore] = useState<number>(0);
   
   // Calculate score based on shapes on the board
   const calculateScore = (board: CellContent[][]) => {
@@ -259,12 +377,37 @@ const Index: React.FC = () => {
         description: getRoundInstructions(currentRound + 1),
       });
     } else {
-      // Game complete
+      // Calculate explore-exploit score for round 3
+      const similarity = calculateLayoutSimilarity(playerBoard, sampleSolution);
+      // Convert similarity to explore-exploit score (0-100)
+      // 100% similarity = 0% exploration, 0% similarity = 100% exploration
+      const exploreScore = 100 - similarity;
+      setExploreExploitScore(exploreScore);
+      
+      // Mark experiment complete
+      setExperimentComplete(true);
+      
       toast({
-        title: "Game Complete!",
-        description: "Thank you for participating in the experiment!",
+        title: "Experiment Complete!",
+        description: "Your results have been calculated.",
       });
     }
+  };
+  
+  // Reset the experiment
+  const resetExperiment = () => {
+    setCurrentRound(1);
+    setPlayerBoard(Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null)));
+    setCurrentScore(0);
+    setSelectedAnimal(null);
+    setIsRoundComplete(false);
+    setExperimentComplete(false);
+    setSampleSolution(createSampleSolution());
+    
+    toast({
+      title: "New Experiment Started",
+      description: "Round 1: Copy the sample layout exactly as shown.",
+    });
   };
   
   // Get instructions based on current round
@@ -291,6 +434,25 @@ const Index: React.FC = () => {
   useEffect(() => {
     checkRoundCompletion(playerBoard);
   }, [currentRound]);
+  
+  // If experiment is complete, show ending screen
+  if (experimentComplete) {
+    return (
+      <div className="min-h-screen bg-lime-50 py-10">
+        <div className="container mx-auto px-4">
+          <h1 className="text-3xl font-bold text-center text-amber-900 mb-8">
+            Safari Shapes - Results
+          </h1>
+          
+          <EndScreen 
+            exploreExploitScore={exploreExploitScore}
+            finalScore={currentScore}
+            onReset={resetExperiment}
+          />
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-lime-50 py-10">
