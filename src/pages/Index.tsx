@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import GameBoard, { CellContent } from '@/components/GameBoard';
@@ -182,6 +181,35 @@ const Index: React.FC = () => {
       });
     }
   };
+
+  // Handle removing a shape from the board
+  const handleRemoveShape = (row: number, col: number) => {
+    const cell = playerBoard[row][col];
+    if (!cell) return;
+
+    // Get the origin coordinates of the shape
+    const originRow = cell.origin?.row ?? row;
+    const originCol = cell.origin?.col ?? col;
+    
+    // Get the size of the shape
+    const gridSize = SIZE_GRID_CELLS[cell.size];
+    
+    // Create a new board
+    const newBoard = [...playerBoard.map(row => [...row])];
+    
+    // Remove all cells that belong to this shape
+    for (let r = 0; r < gridSize.height; r++) {
+      for (let c = 0; c < gridSize.width; c++) {
+        newBoard[originRow + r][originCol + c] = null;
+      }
+    }
+    
+    setPlayerBoard(newBoard);
+    
+    // Update score
+    const newScore = calculateScore(newBoard);
+    setCurrentScore(newScore);
+  };
   
   // Start a new round
   const startNewRound = () => {
@@ -245,6 +273,7 @@ const Index: React.FC = () => {
               cellSize={CELL_SIZE}
               cells={playerBoard}
               onCellClick={handleCellClick}
+              onRemoveShape={handleRemoveShape}
               selectedShape={selectedAnimal ? {
                 id: 'preview',
                 shape: selectedAnimal.shape,

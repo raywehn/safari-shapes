@@ -76,11 +76,11 @@
   }
   
   .board-cell.hover {
-    @apply bg-lime-200;
+    @apply bg-lime-200/50;
   }
-
+  
   .board-cell.invalid-hover {
-    @apply bg-red-200 cursor-not-allowed;
+    @apply bg-red-200/50;
   }
 
   .board-cell .shape-base {

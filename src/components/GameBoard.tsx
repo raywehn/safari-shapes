@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import ShapeItem, { ShapeType, SizeType, SIZE_GRID_CELLS } from './ShapeItem';
 import { cn } from '@/lib/utils';
@@ -16,6 +15,7 @@ interface GameBoardProps {
   cellSize: number;
   cells: (CellContent)[][];
   onCellClick?: (row: number, col: number) => void;
+  onRemoveShape?: (row: number, col: number) => void;
   selectedShape: CellContent | null;
   readOnly?: boolean;
   className?: string;
@@ -26,6 +26,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
   cellSize,
   cells,
   onCellClick,
+  onRemoveShape,
   selectedShape,
   readOnly = false,
   className
@@ -63,7 +64,14 @@ const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   const handleCellClick = (row: number, col: number) => {
-    if (!readOnly && onCellClick && selectedShape && canPlaceShape(row, col, selectedShape)) {
+    if (readOnly) return;
+    
+    const cell = cells[row][col];
+    if (cell) {
+      if (onRemoveShape) {
+        onRemoveShape(row, col);
+      }
+    } else if (onCellClick && selectedShape && canPlaceShape(row, col, selectedShape)) {
       onCellClick(row, col);
     }
   };
@@ -92,12 +100,11 @@ const GameBoard: React.FC<GameBoardProps> = ({
     return cell.origin;
   };
 
-  // Check if this cell is the origin cell of a shape
   const isOriginCell = (row: number, col: number) => {
     const cell = cells[row][col];
     if (!cell) return false;
     
-    if (!cell.origin) return true; // If no origin specified, it is the origin
+    if (!cell.origin) return true;
     return cell.origin.row === row && cell.origin.col === col;
   };
 
@@ -111,19 +118,13 @@ const GameBoard: React.FC<GameBoardProps> = ({
     >
       {cells.map((row, rowIndex) =>
         row.map((cell, colIndex) => {
-          // Determine if this cell is where a shape would be validly placed
           const isValidPlacement = selectedShape && 
-                                   hoverCell?.row === rowIndex && 
-                                   hoverCell?.col === colIndex && 
-                                   canPlaceShape(rowIndex, colIndex, selectedShape);
+                                 hoverCell?.row === rowIndex && 
+                                 hoverCell?.col === colIndex && 
+                                 canPlaceShape(rowIndex, colIndex, selectedShape);
           
-          // Is this cell being hovered over?
           const isHovered = shouldShowHover(rowIndex, colIndex);
-          
-          // Is this the origin cell of a shape?
           const isOrigin = isOriginCell(rowIndex, colIndex);
-
-          // Check if the entire shape area can be placed
           const canPlaceEntireShape = selectedShape && hoverCell && 
             canPlaceShape(hoverCell.row, hoverCell.col, selectedShape);
           
@@ -141,7 +142,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
               onMouseLeave={handleMouseLeave}
               onClick={() => handleCellClick(rowIndex, colIndex)}
             >
-              {/* If this is the origin cell of a shape, render it */}
+              {/* Render placed shape */}
               {cell && isOrigin && (
                 <div className="w-full h-full flex items-center justify-center relative"
                      style={{
@@ -160,23 +161,23 @@ const GameBoard: React.FC<GameBoardProps> = ({
                 </div>
               )}
               
-              {/* Preview shape on hover if valid placement */}
+              {/* Preview shape on hover */}
               {isHovered && isValidPlacement && selectedShape && rowIndex === hoverCell?.row && colIndex === hoverCell?.col && (
-                <div className="w-full h-full flex items-center justify-center relative"
+                <div className="w-full h-full flex items-center justify-center relative pointer-events-none"
                      style={{
                        width: `${SIZE_GRID_CELLS[selectedShape.size].width * 100}%`,
                        height: `${SIZE_GRID_CELLS[selectedShape.size].height * 100}%`,
                        position: 'absolute',
                        left: 0,
-                       top: 0
+                       top: 0,
+                       zIndex: 10
                      }}>
                   <ShapeItem 
                     shape={selectedShape.shape} 
                     size={selectedShape.size} 
-                    preview={true} 
                     gridPreview={true}
-                    className="opacity-50" 
                     animalName={selectedShape.name}
+                    preview={true}
                   />
                 </div>
               )}
