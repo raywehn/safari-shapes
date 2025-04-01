@@ -48,10 +48,9 @@ const placeShapeOnGrid = (grid: CellContent[][], shape: CellContent, row: number
   // Fill all cells that the shape occupies
   for (let r = 0; r < gridSize.height; r++) {
     for (let c = 0; c < gridSize.width; c++) {
-      // Copy the shape data to each cell
       grid[row + r][col + c] = {
         ...shape,
-        origin: { row, col } // Store the origin coordinates
+        origin: { row, col }
       };
     }
   }
@@ -59,30 +58,64 @@ const placeShapeOnGrid = (grid: CellContent[][], shape: CellContent, row: number
   return true;
 };
 
+// Helper function to compare layouts
+const compareLayouts = (layout1: CellContent[][], layout2: CellContent[][]): boolean => {
+  if (layout1.length !== layout2.length || layout1[0].length !== layout2[0].length) {
+    return false;
+  }
+
+  for (let row = 0; row < layout1.length; row++) {
+    for (let col = 0; col < layout1[0].length; col++) {
+      const cell1 = layout1[row][col];
+      const cell2 = layout2[row][col];
+      
+      // If one is null and the other isn't, they don't match
+      if ((cell1 === null) !== (cell2 === null)) {
+        return false;
+      }
+      
+      // If both are cells, compare their properties
+      if (cell1 && cell2) {
+        if (cell1.shape !== cell2.shape || 
+            cell1.size !== cell2.size || 
+            cell1.name !== cell2.name) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+};
+
+// Function to count unique shapes on the board
+const countUniqueShapes = (board: CellContent[][]): number => {
+  const uniqueOrigins = new Set<string>();
+  
+  for (let row = 0; row < board.length; row++) {
+    for (let col = 0; col < board[0].length; col++) {
+      const cell = board[row][col];
+      if (cell && cell.origin) {
+        // Create a unique key for each origin
+        const originKey = `${cell.origin.row}-${cell.origin.col}`;
+        uniqueOrigins.add(originKey);
+      }
+    }
+  }
+  
+  return uniqueOrigins.size;
+};
+
 // Sample layout for guaranteed 50 points
 const createSampleSolution = (): CellContent[][] => {
-  // Create an empty 5x5 grid
   const grid: CellContent[][] = Array(5).fill(null).map(() => Array(5).fill(null));
   
-  // Place an Elephant (20 points, 3x3) in the bottom left
   placeShapeOnGrid(grid, { id: uuidv4(), shape: 'heart', size: 'xl', name: 'Elephant' }, 2, 0);
-  
-  // Place a Leopard (12 points, 2x2) in the top right
   placeShapeOnGrid(grid, { id: uuidv4(), shape: 'square', size: 'lg', name: 'Leopard' }, 0, 3);
-  
-  // Place a Fox (7 points, 2x2) in the middle right
   placeShapeOnGrid(grid, { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' }, 3, 3);
-  
-  // Place a Fox (7 points, 2x2) in the top left
   placeShapeOnGrid(grid, { id: uuidv4(), shape: 'circle', size: 'md', name: 'Fox' }, 0, 0);
-  
-  // Place a Rabbit (3 points, 1x1) in the remaining space
   placeShapeOnGrid(grid, { id: uuidv4(), shape: 'triangle', size: 'sm', name: 'Rabbit' }, 0, 2);
-  
-  // Place a Mouse (1 point, 1x1) in the remaining space
   placeShapeOnGrid(grid, { id: uuidv4(), shape: 'square', size: 'xs', name: 'Mouse' }, 2, 3);
   
-  // Total: 20 + 12 + 7 + 7 + 3 + 1 = 50 points
   return grid;
 }
 
@@ -90,17 +123,17 @@ const Index: React.FC = () => {
   const BOARD_SIZE = 5;
   const CELL_SIZE = 80;
   
+  const [currentRound, setCurrentRound] = useState<number>(1);
   const [sampleSolution, setSampleSolution] = useState<CellContent[][]>(createSampleSolution());
   const [playerBoard, setPlayerBoard] = useState<CellContent[][]>(
     Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null))
   );
   const [selectedAnimal, setSelectedAnimal] = useState<AnimalType | null>(null);
   const [currentScore, setCurrentScore] = useState<number>(0);
-  
+  const [isRoundComplete, setIsRoundComplete] = useState<boolean>(false);
   
   // Calculate score based on shapes on the board
   const calculateScore = (board: CellContent[][]) => {
-    // Create a Set to track which unique shapes we've already counted
     const countedShapes = new Set<string>();
     let score = 0;
     
@@ -108,7 +141,6 @@ const Index: React.FC = () => {
       for (let col = 0; col < board[row].length; col++) {
         const cell = board[row][col];
         if (cell && (!cell.origin || (cell.origin.row === row && cell.origin.col === col))) {
-          // Only count origins of shapes to avoid double counting
           score += SHAPE_POINTS[cell.size];
           countedShapes.add(cell.id);
         }
@@ -116,6 +148,23 @@ const Index: React.FC = () => {
     }
     
     return score;
+  };
+  
+  // Check if round is complete
+  const checkRoundCompletion = (board: CellContent[][]) => {
+    if (currentRound === 1) {
+      // In round 1, check if the player has copied the sample layout
+      const isLayoutCopied = compareLayouts(board, sampleSolution);
+      setIsRoundComplete(isLayoutCopied);
+    } else if (currentRound === 2) {
+      // In round 2, check if the player has placed at least 3 shapes
+      const uniqueShapesCount = countUniqueShapes(board);
+      setIsRoundComplete(uniqueShapesCount >= 3);
+    } else {
+      // In round 3, check if the player has placed at least 4 shapes
+      const uniqueShapesCount = countUniqueShapes(board);
+      setIsRoundComplete(uniqueShapesCount >= 4);
+    }
   };
   
   // Handle selecting an animal from the palette
@@ -127,10 +176,8 @@ const Index: React.FC = () => {
   const handleCellClick = (row: number, col: number) => {
     if (!selectedAnimal) return;
     
-    // Check if we can place the shape here
     const gridSize = SIZE_GRID_CELLS[selectedAnimal.size];
     
-    // Check boundaries
     if (row + gridSize.height > BOARD_SIZE || col + gridSize.width > BOARD_SIZE) {
       toast({
         title: "Can't place here",
@@ -140,7 +187,6 @@ const Index: React.FC = () => {
       return;
     }
     
-    // Check if any cells are already occupied
     for (let r = 0; r < gridSize.height; r++) {
       for (let c = 0; c < gridSize.width; c++) {
         if (playerBoard[row + r][col + c] !== null) {
@@ -154,10 +200,7 @@ const Index: React.FC = () => {
       }
     }
     
-    // Create a new board and place the shape
     const newBoard = [...playerBoard.map(row => [...row])];
-    
-    // Create the shape
     const newShape: CellContent = {
       id: uuidv4(),
       shape: selectedAnimal.shape,
@@ -165,14 +208,14 @@ const Index: React.FC = () => {
       name: selectedAnimal.name
     };
     
-    // Place the shape on the board
     placeShapeOnGrid(newBoard, newShape, row, col);
     setPlayerBoard(newBoard);
     
-    // Update score
     const newScore = calculateScore(newBoard);
     setCurrentScore(newScore);
     
+    // Check if round is complete
+    checkRoundCompletion(newBoard);
   };
 
   // Handle removing a shape from the board
@@ -180,17 +223,12 @@ const Index: React.FC = () => {
     const cell = playerBoard[row][col];
     if (!cell) return;
 
-    // Get the origin coordinates of the shape
     const originRow = cell.origin?.row ?? row;
     const originCol = cell.origin?.col ?? col;
-    
-    // Get the size of the shape
     const gridSize = SIZE_GRID_CELLS[cell.size];
     
-    // Create a new board
     const newBoard = [...playerBoard.map(row => [...row])];
     
-    // Remove all cells that belong to this shape
     for (let r = 0; r < gridSize.height; r++) {
       for (let c = 0; c < gridSize.width; c++) {
         newBoard[originRow + r][originCol + c] = null;
@@ -198,39 +236,62 @@ const Index: React.FC = () => {
     }
     
     setPlayerBoard(newBoard);
-    
-    // Update score
-    const newScore = calculateScore(newBoard);
-    setCurrentScore(newScore);
+    setCurrentScore(calculateScore(newBoard));
+    checkRoundCompletion(newBoard);
   };
   
   // Start a new round
   const startNewRound = () => {
-    setPlayerBoard(Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null)));
-    setCurrentScore(0);
-    setSelectedAnimal(null);
-    
-    // Create a new sample solution
-    setSampleSolution(createSampleSolution());
-    
-    toast({
-      title: "New Round Started",
-      description: "The board has been cleared. Try to maximize your score!",
-    });
+    if (currentRound < 3) {
+      setCurrentRound(prev => prev + 1);
+      setPlayerBoard(Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null)));
+      setCurrentScore(0);
+      setSelectedAnimal(null);
+      setIsRoundComplete(false);
+      
+      // Create a new sample solution for round 3
+      if (currentRound === 2) {
+        setSampleSolution(createSampleSolution());
+      }
+      
+      toast({
+        title: `Round ${currentRound + 1} Started`,
+        description: getRoundInstructions(currentRound + 1),
+      });
+    } else {
+      // Game complete
+      toast({
+        title: "Game Complete!",
+        description: "Thank you for participating in the experiment!",
+      });
+    }
   };
   
-  // Calculate score on initial load
+  // Get instructions based on current round
+  const getRoundInstructions = (round: number): string => {
+    switch (round) {
+      case 1:
+        return "Copy the sample layout exactly as shown.";
+      case 2:
+        return "Place at least 3 shapes in any way you like. Try to maximize your score!";
+      case 3:
+        return "Place at least 4 shapes. You can copy the sample layout or create your own!";
+      default:
+        return "";
+    }
+  };
+  
+  // Calculate score and check completion on initial load
   useEffect(() => {
     setCurrentScore(calculateScore(playerBoard));
+    checkRoundCompletion(playerBoard);
   }, []);
   
-  // Calculate the sample score to verify it's 50
+  // Recheck round completion when the round changes
   useEffect(() => {
-    const sampleScore = calculateScore(sampleSolution);
-    console.log(`Sample solution score: ${sampleScore}`);
-  }, [sampleSolution]);
+    checkRoundCompletion(playerBoard);
+  }, [currentRound]);
   
-  // In the return statement, update the GameInstructions and GameScore props:
   return (
     <div className="min-h-screen bg-lime-50 py-10">
       <div className="container mx-auto px-4">
@@ -244,6 +305,8 @@ const Index: React.FC = () => {
             <GameInstructions 
               onStartNewRound={startNewRound}
               currentScore={currentScore}
+              round={currentRound}
+              isRoundComplete={isRoundComplete}
             />
             
             <GameScore 
@@ -277,18 +340,26 @@ const Index: React.FC = () => {
           
           {/* Right column: Sample Solution */}
           <div className="flex flex-col items-center">
-            <h2 className="text-xl font-bold mb-3 text-amber-900">Sample Layout (50 points)</h2>
-            <GameBoard 
-              size={BOARD_SIZE}
-              cellSize={CELL_SIZE}
-              cells={sampleSolution}
-              selectedShape={null}
-              readOnly={true}
-              className="opacity-90"
-            />
-            <p className="mt-3 text-amber-700 text-center">
-              This sample layout guarantees exactly 50 points
-            </p>
+            <h2 className="text-xl font-bold mb-3 text-amber-900">
+              {currentRound === 2 ? "No Sample Layout" : "Sample Layout (50 points)"}
+            </h2>
+            {currentRound !== 2 && (
+              <>
+                <GameBoard 
+                  size={BOARD_SIZE}
+                  cellSize={CELL_SIZE}
+                  cells={sampleSolution}
+                  selectedShape={null}
+                  readOnly={true}
+                  className="opacity-90"
+                />
+                <p className="mt-3 text-amber-700 text-center">
+                  {currentRound === 1 
+                    ? "Copy this layout exactly to complete the round"
+                    : "You can use this layout as inspiration"}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
