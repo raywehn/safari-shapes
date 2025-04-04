@@ -48,7 +48,7 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({
               In this round, you'll need to use all 5 animal shapes. Try to:
             </p>
             <ul className="list-disc list-inside mb-2">
-              <li>Place all 5 different animal shapes at least once</li>
+              <li>Place 4 different animal shapes at least once</li>
               <li>Maximize your score by using larger shapes</li>
               <li>Experiment with different arrangements</li>
             </ul>

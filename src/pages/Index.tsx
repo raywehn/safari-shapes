@@ -256,10 +256,8 @@ const EndScreen: React.FC<EndScreenProps> = ({ exploreExploitScore, finalScore, 
         )}
         
         {/* Score History in End Screen */}
-        <div className="bg-amber-50 p-4 rounded-md border border-amber-200">
-          <h4 className="text-lg font-bold text-amber-800 mb-2">Score History</h4>
-          <ScoreBoard roundScores={roundScores} />
-        </div>
+        <h4 className="text-lg font-bold text-amber-800 mb-2">Score History</h4>
+        <ScoreBoard roundScores={roundScores} />
         <div>
           <h3 className="text-xl font-bold text-amber-800 mb-2">Explore-Exploit Measurement</h3>
           
