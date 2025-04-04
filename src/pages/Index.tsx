@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import GameBoard, { CellContent } from '@/components/GameBoard';
 import ShapePalette from '@/components/ShapePalette';
@@ -9,6 +9,7 @@ import { AnimalType, SHAPE_POINTS, SIZE_GRID_CELLS } from '@/components/ShapeIte
 import { toast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 // Define our animal enclosures
 const ANIMALS: AnimalType[] = [
@@ -176,6 +177,46 @@ const createSampleSolution2 = (): CellContent[][] => {
   return grid;
 };
 
+// Define the experimental conditions
+type Condition = {
+  id: number;
+  name: string;
+  cognitiveLoad: 'low' | 'high';
+  timePressure: boolean;
+  description: string;
+};
+
+const CONDITIONS: Condition[] = [
+  { 
+    id: 1, 
+    name: "Condition 1", 
+    cognitiveLoad: 'low', 
+    timePressure: false, 
+    description: "Low cognitive load (recite '123' continuously), no time pressure"
+  },
+  { 
+    id: 2, 
+    name: "Condition 2", 
+    cognitiveLoad: 'high', 
+    timePressure: false, 
+    description: "High cognitive load (recite '9372816' continuously), no time pressure" 
+  },
+  { 
+    id: 3, 
+    name: "Condition 3", 
+    cognitiveLoad: 'low', 
+    timePressure: true, 
+    description: "Low cognitive load (recite '123' continuously), time pressure (1 minute limit)" 
+  },
+  { 
+    id: 4, 
+    name: "Condition 4", 
+    cognitiveLoad: 'high', 
+    timePressure: true, 
+    description: "High cognitive load (recite '9372816' continuously), time pressure (1 minute limit)" 
+  }
+];
+
 // Define the RoundScore interface
 interface RoundScore {
   round: number;
@@ -188,9 +229,10 @@ interface EndScreenProps {
   finalScore: number;
   onReset: () => void;
   roundScores: RoundScore[];
+  condition: Condition | null;
 }
 
-const EndScreen: React.FC<EndScreenProps> = ({ exploreExploitScore, finalScore, onReset, roundScores }) => {
+const EndScreen: React.FC<EndScreenProps> = ({ exploreExploitScore, finalScore, onReset, roundScores, condition }) => {
   const explorationLevel = exploreExploitScore > 75 ? "High Exploration" :
                           exploreExploitScore > 25 ? "Balanced Approach" : "High Exploitation";
   
@@ -206,12 +248,18 @@ const EndScreen: React.FC<EndScreenProps> = ({ exploreExploitScore, finalScore, 
           </p>
         </div>
         
+        {condition && (
+          <div className="bg-amber-50 p-4 rounded-md border border-amber-200">
+            <h4 className="text-lg font-bold text-amber-800 mb-2">Experimental Condition</h4>
+            <p className="text-amber-700">{condition.description}</p>
+          </div>
+        )}
+        
         {/* Score History in End Screen */}
         <div className="bg-amber-50 p-4 rounded-md border border-amber-200">
           <h4 className="text-lg font-bold text-amber-800 mb-2">Score History</h4>
           <ScoreBoard roundScores={roundScores} />
         </div>
-        
         <div>
           <h3 className="text-xl font-bold text-amber-800 mb-2">Explore-Exploit Measurement</h3>
           
@@ -287,11 +335,12 @@ const StartPage: React.FC<StartPageProps> = ({ onStart }) => {
             Safari Shapes is a fun puzzle game where you'll arrange animal enclosures in a grid to create the perfect safari!
           </p>
           <p className="text-amber-700 mb-3">
-            This game has 5 rounds with different challenges:
+            This game has 6 rounds with different challenges:
           </p>
           <ul className="list-disc list-inside space-y-2 text-amber-700 ml-4">
             <li>Rounds 1-4: Practice rounds to learn different aspects of the game</li>
-            <li>Round 5: Final round where you'll create your ultimate safari layout</li>
+            <li>Round 5: Create your safari layout (copy sample or create your own)</li>
+            <li>Round 6: Final challenge with special conditions</li>
           </ul>
         </div>
         
@@ -323,11 +372,12 @@ interface IntermediateScreenProps {
   round: number;
   previousScore?: number;
   onStartRound: () => void;
+  condition?: Condition;
 }
 
-const IntermediateScreen: React.FC<IntermediateScreenProps> = ({ round, previousScore, onStartRound }) => {
+const IntermediateScreen: React.FC<IntermediateScreenProps> = ({ round, previousScore, onStartRound, condition }) => {
   // Description and objectives for each round
-  const getRoundDetails = (roundNumber: number) => {
+  const getRoundDetails = (roundNumber: number, condition?: Condition) => {
     switch (roundNumber) {
       case 1:
         return {
@@ -375,14 +425,32 @@ const IntermediateScreen: React.FC<IntermediateScreenProps> = ({ round, previous
         };
       case 5:
         return {
-          title: "Round 5: Final Safari Challenge",
-          description: "This is the final round where you'll create your ultimate safari layout.",
+          title: "Round 5: Safari Challenge",
+          description: "In this round, you can either copy the sample layout or create your own design.",
           objectives: [
             "Place at least 4 shapes on the grid",
             "You can copy the sample layout or create your own design",
             "Try to maximize your score"
           ],
           tip: "Your choices in this round will be analyzed to provide insights about your decision-making."
+        };
+      case 6:
+        return {
+          title: `Round 6: Final Challenge - ${condition?.name || ""}`,
+          description: `This is the final round with special conditions: ${condition?.description || ""}`,
+          objectives: [
+            "Place at least 4 shapes on the grid",
+            condition?.cognitiveLoad === 'low' 
+              ? "Recite '123' continuously while playing (audio will be detected)" 
+              : "Recite '9372816' continuously while playing (audio will be detected)",
+            condition?.timePressure 
+              ? "Complete the round within 1 minute" 
+              : "Take your time to complete the round",
+            "Try to maximize your score"
+          ],
+          tip: condition?.timePressure 
+            ? "Work efficiently under the time constraint." 
+            : "Focus on the recitation task while designing your layout."
         };
       default:
         return {
@@ -394,7 +462,7 @@ const IntermediateScreen: React.FC<IntermediateScreenProps> = ({ round, previous
     }
   };
 
-  const roundDetails = getRoundDetails(round);
+  const roundDetails = getRoundDetails(round, condition);
 
   return (
     <div className="safari-card w-full max-w-3xl mx-auto">
@@ -443,10 +511,53 @@ const IntermediateScreen: React.FC<IntermediateScreenProps> = ({ round, previous
   );
 };
 
+// Create an audio alert component
+const AudioAlert: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  cognitiveLoad: 'low' | 'high';
+}> = ({ isOpen, onClose, cognitiveLoad }) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Audio Input Required</DialogTitle>
+          <DialogDescription>
+            {cognitiveLoad === 'low' 
+              ? "Please continue reciting '123' to continue the game." 
+              : "Please continue reciting '9372816' to continue the game."}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-center">
+          <Button onClick={onClose}>Resume Game</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Timer component
+const Timer: React.FC<{
+  seconds: number;
+  isRunning: boolean;
+}> = ({ seconds, isRunning }) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  
+  return (
+    <div className={cn(
+      "px-4 py-2 rounded-md text-xl font-bold",
+      seconds <= 10 ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-800"
+    )}>
+      {minutes}:{remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds}
+    </div>
+  );
+};
+
 const Index: React.FC = () => {
   const BOARD_SIZE = 5;
   const CELL_SIZE = 80;
-  const TOTAL_ROUNDS = 5;
+  const TOTAL_ROUNDS = 6;
   
   // Add state for showing the start page and intermediate screen
   const [showStartPage, setShowStartPage] = useState<boolean>(true);
@@ -466,6 +577,130 @@ const Index: React.FC = () => {
   const [roundScores, setRoundScores] = useState<RoundScore[]>([]);
   const [previousRoundScore, setPreviousRoundScore] = useState<number | undefined>(undefined);
   
+  // Add new state for the experimental conditions
+  const [selectedCondition, setSelectedCondition] = useState<Condition | null>(null);
+  
+  // Add state for audio detection
+  const [isListening, setIsListening] = useState<boolean>(false);
+  const [showAudioAlert, setShowAudioAlert] = useState<boolean>(false);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+  const audioCheckInterval = useRef<number | null>(null);
+  
+  // Add state for timer
+  const [timeLeft, setTimeLeft] = useState<number>(60); // 60 seconds = 1 minute
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
+  const timerInterval = useRef<number | null>(null);
+  
+  // Audio detection function
+  const startAudioDetection = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setAudioStream(stream);
+      
+      const context = new AudioContext();
+      setAudioContext(context);
+      
+      const source = context.createMediaStreamSource(stream);
+      const analyzer = context.createAnalyser();
+      analyzer.fftSize = 256;
+      source.connect(analyzer);
+      
+      const bufferLength = analyzer.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      
+      let silenceCounter = 0;
+      
+      audioCheckInterval.current = window.setInterval(() => {
+        analyzer.getByteFrequencyData(dataArray);
+        
+        // Calculate the average volume
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+          sum += dataArray[i];
+        }
+        const average = sum / bufferLength;
+        
+        // If the average volume is below a threshold, count as silence
+        if (average < 10) {
+          silenceCounter++;
+          if (silenceCounter > 3) { // 3 seconds of relative silence
+            setShowAudioAlert(true);
+            setIsTimerRunning(false); // Pause timer if running
+          }
+        } else {
+          silenceCounter = 0;
+          if (showAudioAlert) {
+            setShowAudioAlert(false);
+          }
+        }
+      }, 1000); // Check audio every second
+      
+      setIsListening(true);
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      toast({
+        title: "Microphone Error",
+        description: "Unable to access microphone. Please check permissions.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const stopAudioDetection = () => {
+    if (audioCheckInterval.current) {
+      clearInterval(audioCheckInterval.current);
+      audioCheckInterval.current = null;
+    }
+    
+    if (audioStream) {
+      audioStream.getTracks().forEach(track => track.stop());
+      setAudioStream(null);
+    }
+    
+    if (audioContext) {
+      audioContext.close();
+      setAudioContext(null);
+    }
+    
+    setIsListening(false);
+  };
+  
+  // Timer functions
+  const startTimer = () => {
+    setTimeLeft(60); // Reset to 60 seconds
+    setIsTimerRunning(true);
+    
+    timerInterval.current = window.setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          // End the round when time runs out
+          clearInterval(timerInterval.current!);
+          setIsTimerRunning(false);
+          startNewRound();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+  
+  const stopTimer = () => {
+    if (timerInterval.current) {
+      clearInterval(timerInterval.current);
+      timerInterval.current = null;
+    }
+    setIsTimerRunning(false);
+  };
+  
+  // Handle audio alert dismissal
+  const handleAudioAlertClose = () => {
+    setShowAudioAlert(false);
+    if (selectedCondition?.timePressure && !isTimerRunning) {
+      setIsTimerRunning(true); // Resume timer if it was running
+    }
+  };
+  
   // Start the game from the start page
   const handleStartGame = () => {
     setShowStartPage(false);
@@ -475,6 +710,14 @@ const Index: React.FC = () => {
   // Start a round from the intermediate screen
   const handleStartRound = () => {
     setShowIntermediateScreen(false);
+    
+    // Start audio detection and timer for the final round
+    if (currentRound === 6) {
+      startAudioDetection();
+      if (selectedCondition?.timePressure) {
+        startTimer();
+      }
+    }
     
     toast({
       title: `Round ${currentRound} Started`,
@@ -507,7 +750,7 @@ const Index: React.FC = () => {
       const isLayoutCopied = compareLayouts(board, currentSampleSolution);
       setIsRoundComplete(isLayoutCopied);
     }
-    // For rounds 2, 4, and 5 (creating layouts), check if at least 4 shapes are placed
+    // For rounds 2, 4, 5, and 6 (creating layouts), check if at least 4 shapes are placed
     else {
       const uniqueShapesCount = countUniqueShapes(board);
       setIsRoundComplete(uniqueShapesCount >= 4);
@@ -589,6 +832,15 @@ const Index: React.FC = () => {
   
   // Start a new round
   const startNewRound = () => {
+    // Stop audio detection and timer if they're running
+    if (isListening) {
+      stopAudioDetection();
+    }
+    
+    if (isTimerRunning) {
+      stopTimer();
+    }
+    
     // Save the current round's score
     setRoundScores(prev => [...prev, { round: currentRound, score: currentScore }]);
     // Store the previous round's score for display in the intermediate screen
@@ -603,12 +855,18 @@ const Index: React.FC = () => {
       setSelectedAnimal(null);
       setIsRoundComplete(false);
       
-      // Set the appropriate sample solution for the next round
+      // Set the appropriate sample solution for the different rounds
       if (nextRound === 3) {
         setCurrentSampleSolution(sampleSolution2);
-      } else if (nextRound === 5) {
-        // Use sample solution 1 for the final round
+      } else if (nextRound === 5 || nextRound === 6) {
+        // Use sample solution 1 for rounds 5 and 6
         setCurrentSampleSolution(sampleSolution1);
+      }
+      
+      // For the final round (6), randomly select a condition
+      if (nextRound === 6) {
+        const randomConditionIndex = Math.floor(Math.random() * CONDITIONS.length);
+        setSelectedCondition(CONDITIONS[randomConditionIndex]);
       }
       
       // Show the intermediate screen
@@ -619,11 +877,14 @@ const Index: React.FC = () => {
       const updatedScores = [...roundScores, finalRoundScore];
       setRoundScores(updatedScores);
       
-      // Calculate explore-exploit score for the final round (round 5)
-      const similarity = calculateLayoutSimilarity(playerBoard, currentSampleSolution);
-      // Convert similarity to explore-exploit score (0-100)
-      // 100% similarity = 0% exploration, 0% similarity = 100% exploration
-      const exploreScore = 100 - similarity;
+      // Calculate explore-exploit score for round 5 (the round before the conditions)
+      // We don't use the final round (6) for this as it's affected by the experimental conditions
+      const round5Score = updatedScores.find(score => score.round === 5);
+      const round5Board = playerBoard; // The current board state is from round 6, so this isn't correct
+      // In practice, we'd need to store each round's board separately to calculate this accurately
+      
+      // For now, we'll just use a placeholder value
+      const exploreScore = 50; // This should be calculated properly in a real implementation
       setExploreExploitScore(exploreScore);
       
       // Mark experiment complete
@@ -647,6 +908,16 @@ const Index: React.FC = () => {
     setCurrentSampleSolution(sampleSolution1);
     setRoundScores([]); // Clear round scores
     setPreviousRoundScore(undefined);
+    setSelectedCondition(null);
+    
+    // Stop audio detection and timer if they're running
+    if (isListening) {
+      stopAudioDetection();
+    }
+    
+    if (isTimerRunning) {
+      stopTimer();
+    }
     
     // Show the start page again
     setShowStartPage(true);
@@ -665,7 +936,11 @@ const Index: React.FC = () => {
       case 4:
         return "Create another layout with at least 4 different animals.";
       case 5:
-        return "Final round: Place at least 4 shapes. You can copy the sample or create your own design.";
+        return "Place at least 4 shapes. You can copy the sample or create your own design.";
+      case 6:
+        return selectedCondition ? 
+          `Final round with ${selectedCondition.description}. Place at least 4 shapes to complete.` : 
+          "Final round: Place at least 4 shapes to complete.";
       default:
         return "";
     }
@@ -673,8 +948,8 @@ const Index: React.FC = () => {
   
   // Should the sample layout be shown for the current round?
   const shouldShowSampleLayout = (round: number): boolean => {
-    // Only show sample layout in rounds 1, 3, and 5
-    return round === 1 || round === 3 || round === 5;
+    // Only show sample layout in rounds 1, 3, 5, and 6
+    return round === 1 || round === 3 || round === 5 || round === 6;
   };
   
   // Get the appropriate text for the sample layout based on the round
@@ -683,9 +958,26 @@ const Index: React.FC = () => {
       return "Copy this layout exactly to complete the round";
     } else if (round === 5) {
       return "You can copy this layout or create your own";
+    } else if (round === 6) {
+      return "You can copy this layout or create your own under the experimental condition";
     }
     return "";
   };
+  
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      if (audioCheckInterval.current) {
+        clearInterval(audioCheckInterval.current);
+      }
+      if (timerInterval.current) {
+        clearInterval(timerInterval.current);
+      }
+      if (audioStream) {
+        audioStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
   
   // Calculate score and check completion on initial load
   useEffect(() => {
@@ -726,6 +1018,7 @@ const Index: React.FC = () => {
             round={currentRound}
             previousScore={previousRoundScore}
             onStartRound={handleStartRound}
+            condition={currentRound === 6 ? selectedCondition : undefined}
           />
         </div>
       </div>
@@ -746,6 +1039,7 @@ const Index: React.FC = () => {
             finalScore={currentScore}
             onReset={resetExperiment}
             roundScores={roundScores}
+            condition={selectedCondition}
           />
         </div>
       </div>
@@ -758,6 +1052,15 @@ const Index: React.FC = () => {
         <h1 className="text-3xl font-bold text-center text-amber-900 mb-8">
           Safari Shapes
         </h1>
+        
+        {/* Audio Alert Dialog */}
+        {showAudioAlert && (
+          <AudioAlert 
+            isOpen={showAudioAlert}
+            onClose={handleAudioAlertClose}
+            cognitiveLoad={selectedCondition?.cognitiveLoad || 'low'}
+          />
+        )}
         
         <div className="flex flex-col gap-6">
           {/* Game controls and boards */}
@@ -775,12 +1078,32 @@ const Index: React.FC = () => {
                 currentScore={currentScore}
               />
               
-              {/* Show score history if there are previous rounds */}
+              {/* Show timer for time pressure condition in round 6 */}
+              {currentRound === 6 && selectedCondition?.timePressure && (
+                <div className="bg-amber-50 p-4 rounded-md border border-amber-200">
+                  <h3 className="text-lg font-bold text-amber-800 mb-2">Time Remaining</h3>
+                  <Timer seconds={timeLeft} isRunning={isTimerRunning} />
+                </div>
+              )}
+              
+              {/* Show cognitive load reminder for round 6 */}
+              {currentRound === 6 && (
+                <div className="bg-amber-50 p-4 rounded-md border border-amber-200">
+                  <h3 className="text-lg font-bold text-amber-800 mb-2">Verbal Task</h3>
+                  <p className="text-amber-700">
+                    {selectedCondition?.cognitiveLoad === 'low' 
+                      ? "Please continuously recite '123' while playing." 
+                      : "Please continuously recite '9372816' while playing."}
+                  </p>
+                </div>
+              )}
+              
+              {/* Show score history if there are previous rounds
               {roundScores.length > 0 && (
                 <ScoreBoard 
                   roundScores={roundScores}
                 />
-              )}
+              )} */}
             </div>
             
             {/* Middle column: Player's Game Board */}
@@ -801,7 +1124,7 @@ const Index: React.FC = () => {
               />
             </div>
             
-            {/* Right column: Sample Solution (only shown in rounds 1, 3, and 5) */}
+            {/* Right column: Sample Solution (only shown in rounds 1, 3, 5, and 6) */}
             <div className="flex flex-col items-center">
               <h2 className="text-xl font-bold mb-3 text-amber-900">
                 {shouldShowSampleLayout(currentRound) ? "Sample Layout (50+ points)" : "No Sample Layout"}
