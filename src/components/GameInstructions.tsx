@@ -45,15 +45,15 @@ const GameInstructions: React.FC<GameInstructionsProps> = ({
               Great job! Now it's time to explore on your own.
             </p>
             <p className="mb-2">
-              In this round, you'll place at least 3 shapes in any way you like. Try to:
+              In this round, you'll need to use all 5 animal shapes. Try to:
             </p>
             <ul className="list-disc list-inside mb-2">
-              <li>Place at least 3 different shapes</li>
+              <li>Place all 5 different animal shapes at least once</li>
               <li>Maximize your score by using larger shapes</li>
               <li>Experiment with different arrangements</li>
             </ul>
             <p className="font-semibold text-red-600">
-              You must place at least 3 shapes to complete this round.
+              You must place all 5 animal shapes to complete this round.
             </p>
           </>
         );
