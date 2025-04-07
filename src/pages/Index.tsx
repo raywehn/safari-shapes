@@ -509,6 +509,81 @@ const IntermediateScreen: React.FC<IntermediateScreenProps> = ({ round, previous
   );
 };
 
+// Create a Memorization Screen component
+interface MemorizationScreenProps {
+  condition: Condition;
+  onComplete: () => void;
+}
+
+const MemorizationScreen: React.FC<MemorizationScreenProps> = ({ condition, onComplete }) => {
+  const [timeLeft, setTimeLeft] = useState<number>(30); // 30 seconds to memorize
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current!);
+          onComplete();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [onComplete]);
+  
+  return (
+    <div className="safari-card w-full max-w-3xl mx-auto">
+      <h2 className="text-3xl font-bold mb-6 text-amber-900 text-center">Memorize the Sequence</h2>
+      
+      <div className="space-y-6">
+        <div className="bg-amber-50 p-6 rounded-md border border-amber-200">
+          <h3 className="text-xl font-bold text-amber-800 mb-3">Instructions</h3>
+          <p className="text-amber-700 mb-4">
+            Take 30 seconds to memorize the following sequence. You will need to recite it continuously during the next round:
+          </p>
+          
+          <div className="bg-white p-6 rounded-md border-2 border-amber-400 flex items-center justify-center">
+            <p className="text-3xl font-bold text-amber-900">
+              {condition.cognitiveLoad === 'low' ? '123' : '9372816'}
+            </p>
+          </div>
+          
+          <div className="mt-4 bg-amber-100 p-3 rounded-md">
+            <p className="text-amber-800 font-semibold">
+              Time remaining: <span className="text-xl">{timeLeft}</span> seconds
+            </p>
+          </div>
+        </div>
+        
+        <div className="bg-amber-50 p-6 rounded-md border border-amber-200">
+          <h3 className="text-xl font-bold text-amber-800 mb-3">What to Do</h3>
+          <ol className="list-decimal list-inside space-y-2 text-amber-700 ml-4">
+            <li>Look at the number sequence and commit it to memory</li>
+            <li>During the next round, you'll need to recite this sequence continuously</li>
+            <li>If you stop reciting, the game will pause until you resume</li>
+            <li>Your microphone will be used to detect if you're reciting the numbers</li>
+          </ol>
+        </div>
+        
+        <div className="mt-8">
+          <Button 
+            className="w-full bg-primary hover:bg-primary/90 text-xl py-6"
+            onClick={onComplete}
+          >
+            Skip & Continue
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 // Create an audio alert component
 const AudioAlert: React.FC<{
   isOpen: boolean;
@@ -560,6 +635,7 @@ const Index: React.FC = () => {
   // Add state for showing the start page and intermediate screen
   const [showStartPage, setShowStartPage] = useState<boolean>(true);
   const [showIntermediateScreen, setShowIntermediateScreen] = useState<boolean>(false);
+  const [showMemorizationScreen, setShowMemorizationScreen] = useState<boolean>(false);
   const [currentRound, setCurrentRound] = useState<number>(1);
   const [sampleSolution1] = useState<CellContent[][]>(createSampleSolution1());
   const [sampleSolution2] = useState<CellContent[][]>(createSampleSolution2());
@@ -709,12 +785,28 @@ const Index: React.FC = () => {
   const handleStartRound = () => {
     setShowIntermediateScreen(false);
     
-    // Start audio detection and timer for the final round
+    // If this is round 6, show the memorization screen first
     if (currentRound === 6) {
-      startAudioDetection();
-      if (selectedCondition?.timePressure) {
-        startTimer();
-      }
+      setShowMemorizationScreen(true);
+    }
+    
+    // For all other rounds, start the round directly
+    if (currentRound !== 6) {
+      toast({
+        title: `Round ${currentRound} Started`,
+        description: getRoundInstructions(currentRound),
+      });
+    }
+  };
+  
+  // Handler for completing the memorization screen
+  const handleMemorizationComplete = () => {
+    setShowMemorizationScreen(false);
+    
+    // Start audio detection and timer for the final round
+    startAudioDetection();
+    if (selectedCondition?.timePressure) {
+      startTimer();
     }
     
     toast({
@@ -920,6 +1012,7 @@ const Index: React.FC = () => {
     // Show the start page again
     setShowStartPage(true);
     setShowIntermediateScreen(false);
+    setShowMemorizationScreen(false);
   };
   
   // Get instructions based on current round
@@ -1023,6 +1116,24 @@ const Index: React.FC = () => {
     );
   }
   
+  // Show the memorization screen if showMemorizationScreen is true
+  if (showMemorizationScreen) {
+    return (
+      <div className="min-h-screen bg-lime-50 py-10">
+        <div className="container mx-auto px-4">
+          <h1 className="text-3xl font-bold text-center text-amber-900 mb-8">
+            Safari Shapes
+          </h1>
+          
+          <MemorizationScreen 
+            condition={selectedCondition!}
+            onComplete={handleMemorizationComplete}
+          />
+        </div>
+      </div>
+    );
+  }
+  
   // If experiment is complete, show ending screen
   if (experimentComplete) {
     return (
@@ -1095,13 +1206,6 @@ const Index: React.FC = () => {
                   </p>
                 </div>
               )}
-              
-              {/* Show score history if there are previous rounds
-              {roundScores.length > 0 && (
-                <ScoreBoard 
-                  roundScores={roundScores}
-                />
-              )} */}
             </div>
             
             {/* Middle column: Player's Game Board */}
